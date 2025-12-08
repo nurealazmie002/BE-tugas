@@ -1,195 +1,134 @@
-# 📚 Perpustakaan API
+postgres=# CREATE TABLE produk (
+postgres(# id SERIAL PRIMARY KEY,
+postgres(# name VARCHAR(100) NOT NULL,
+postgres(# category VARCHAR(100) NOT NULL,
+postgres(# price DECIMAL(10,2) NOT NULL,
+postgres(# stock INT DEFAULT 0,
+postgres(# is_active BOOLEAN DEFAULT TRUE,
+postgres(#
+postgres(# created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+postgres(# );
+CREATE TABLE
 
-API sederhana untuk manajemen perpustakaan. Project ini dibuat sebagai tugas evaluasi minggu pertama bootcamp backend development.
+    
+postgres=# SELECT * FROM produk;
+ id | name | category | price | stock | is_active | created_at
+----+------+----------+-------+-------+-----------+------------
+(0 rows)
 
-## Fitur Utama
+postgres=# INSERT INTO produk (name, category, price, stock, is_active)
+postgres-# VALUES
+postgres-# ('Smartphone Samsung A54', 'Handphone', 4299000, 15, TRUE),
+postgres-#
+postgres-# ('Laptop ASUS Vivobook 14', 'Laptop', 7999000, 10, TRUE),
+postgres-#
+postgres-# ('Smart TV LG 43 Inch', 'Televisi', 5999000, 7, TRUE),
+postgres-#
+postgres-# ('Kulkas Sharp 2 Pintu', 'Kulkas', 3299000, 12, TRUE),
+postgres-#
+postgres-# ('Mesin Cuci Samsung Front Load', 'Mesin Cuci', 4899000, 8, TRUE),
+postgres-#
+postgres-# ('Headset Sony WH-CH520', 'Aksesoris', 799000, 25, TRUE),
+postgres-#
+postgres-# ('Bluetooth Speaker JBL Go 3', 'Speaker', 529000, 30, TRUE),
+postgres-#
+postgres-# ('Air Conditioner Daikin 1 PK', 'AC', 3999000, 5, TRUE),
+postgres-#
+postgres-# ('Monitor Samsung 24 Inch', 'Monitor', 1599000, 20, TRUE),
+postgres-#
+postgres-# ('Smartwatch Xiaomi Watch S1', 'Smartwatch', 2499000, 18, TRUE);
+INSERT 0 10
 
-- Manajemen Buku (CRUD lengkap)
-- Manajemen Member (CRUD lengkap)
-- Pencarian dan filter data
-- Validasi input otomatis
-- Error handling yang rapi
 
-## Tech Stack
+postgres=# SELECT * FROM produk;
+ id |             name              |  category  |   price    | stock | is_active |        created_at
+----+-------------------------------+------------+------------+-------+-----------+--------------------------
+  1 | Smartphone Samsung A54        | Handphone  | 4299000.00 |    15 | t         | 2025-12-08 13:42:08.8224
+  2 | Laptop ASUS Vivobook 14       | Laptop     | 7999000.00 |    10 | t         | 2025-12-08 13:42:08.8224
+  3 | Smart TV LG 43 Inch           | Televisi   | 5999000.00 |     7 | t         | 2025-12-08 13:42:08.8224
+  4 | Kulkas Sharp 2 Pintu          | Kulkas     | 3299000.00 |    12 | t         | 2025-12-08 13:42:08.8224
+  5 | Mesin Cuci Samsung Front Load | Mesin Cuci | 4899000.00 |     8 | t         | 2025-12-08 13:42:08.8224
+  6 | Headset Sony WH-CH520         | Aksesoris  |  799000.00 |    25 | t         | 2025-12-08 13:42:08.8224
+  7 | Bluetooth Speaker JBL Go 3    | Speaker    |  529000.00 |    30 | t         | 2025-12-08 13:42:08.8224
+  8 | Air Conditioner Daikin 1 PK   | AC         | 3999000.00 |     5 | t         | 2025-12-08 13:42:08.8224
+  9 | Monitor Samsung 24 Inch       | Monitor    | 1599000.00 |    20 | t         | 2025-12-08 13:42:08.8224
+ 10 | Smartwatch Xiaomi Watch S1    | Smartwatch | 2499000.00 |    18 | t         | 2025-12-08 13:42:08.8224
+(10 rows)
 
-- **Node.js** + **Express** - Framework backend
-- **TypeScript** - Type safety
-- **Express Validator** - Validasi input
 
-## Cara Install
+postgres=# SELECT *
+postgres-# FROM produk
+postgres-# WHERE price > 5000000;
+ id |          name           | category |   price    | stock | is_active |        created_at
+----+-------------------------+----------+------------+-------+-----------+--------------------------
+  2 | Laptop ASUS Vivobook 14 | Laptop   | 7999000.00 |    10 | t         | 2025-12-08 13:42:08.8224
+  3 | Smart TV LG 43 Inch     | Televisi | 5999000.00 |     7 | t         | 2025-12-08 13:42:08.8224
+(2 rows)
 
-```bash
-# Clone repo
-git clone <your-repo-url>
-cd perpustakaan-api
 
-# Install dependencies
-npm install
+postgres=# SELECT *
+postgres-# FROM produk
+postgres-# WHERE category = 'Laptop';
+ id |          name           | category |   price    | stock | is_active |        created_at
+----+-------------------------+----------+------------+-------+-----------+--------------------------
+  2 | Laptop ASUS Vivobook 14 | Laptop   | 7999000.00 |    10 | t         | 2025-12-08 13:42:08.8224
+(1 row)
 
-# Jalankan server
-npm run dev
-```
 
-Server akan jalan di `http://localhost:3000`
+postgres=# SELECT *
+postgres-# FROM produk
+postgres-# WHERE category = 'Laptop';
+ id |          name           | category |   price    | stock | is_active |        created_at
+----+-------------------------+----------+------------+-------+-----------+--------------------------
+  2 | Laptop ASUS Vivobook 14 | Laptop   | 7999000.00 |    10 | t         | 2025-12-08 13:42:08.8224
+(1 row)
 
-## API Endpoints
 
-### Books (Buku)
+postgres=# UPDATE produk
+postgres-# SET price = 8000000, stock = 11
+postgres-# WHERE id = 2 ;
+UPDATE 1
+postgres=# SELECT *
+postgres-# FROM produk WHERE name LIKE '%Laptop%';
+ id |          name           | category |   price    | stock | is_active |        created_at
+----+-------------------------+----------+------------+-------+-----------+--------------------------
+  2 | Laptop ASUS Vivobook 14 | Laptop   | 8000000.00 |    11 | t         | 2025-12-08 13:42:08.8224
+(1 row)
 
-| Method | Endpoint | Keterangan |
-|--------|----------|------------|
-| GET | `/api/books` | Ambil semua buku |
-| GET | `/api/books/:id` | Ambil buku by ID |
-| POST | `/api/books` | Tambah buku baru |
-| PUT | `/api/books/:id` | Update buku |
-| DELETE | `/api/books/:id` | Hapus buku |
 
-**Contoh pencarian:**
-- `/api/books?search=harry` - Cari buku dengan kata "harry"
-- `/api/books?kategori=fiksi` - Filter buku kategori fiksi
-- `/api/books?min_tahun=2000&max_tahun=2020` - Filter buku tahun 2000-2020
+postgres=# DELETE FROM produk WHERE id = ( SELECT id FROM produk ORDER BY price ASC LIMIT 1 );
+DELETE 1
+postgres=# SELECT * FROM produk;
+ id |             name              |  category  |   price    | stock | is_active |        created_at
+----+-------------------------------+------------+------------+-------+-----------+--------------------------
+  1 | Smartphone Samsung A54        | Handphone  | 4299000.00 |    15 | t         | 2025-12-08 13:42:08.8224
+  3 | Smart TV LG 43 Inch           | Televisi   | 5999000.00 |     7 | t         | 2025-12-08 13:42:08.8224
+  4 | Kulkas Sharp 2 Pintu          | Kulkas     | 3299000.00 |    12 | t         | 2025-12-08 13:42:08.8224
+  5 | Mesin Cuci Samsung Front Load | Mesin Cuci | 4899000.00 |     8 | t         | 2025-12-08 13:42:08.8224
+  6 | Headset Sony WH-CH520         | Aksesoris  |  799000.00 |    25 | t         | 2025-12-08 13:42:08.8224
+  8 | Air Conditioner Daikin 1 PK   | AC         | 3999000.00 |     5 | t         | 2025-12-08 13:42:08.8224
+  9 | Monitor Samsung 24 Inch       | Monitor    | 1599000.00 |    20 | t         | 2025-12-08 13:42:08.8224
+ 10 | Smartwatch Xiaomi Watch S1    | Smartwatch | 2499000.00 |    18 | t         | 2025-12-08 13:42:08.8224
+  2 | Laptop ASUS Vivobook 14       | Laptop     | 8000000.00 |    11 | t         | 2025-12-08 13:42:08.8224
+(9 rows)
 
-### Members (Anggota)
 
-| Method | Endpoint | Keterangan |
-|--------|----------|------------|
-| GET | `/api/members` | Ambil semua member |
-| GET | `/api/members/:id` | Ambil member by ID |
-| POST | `/api/members` | Tambah member baru |
-| PUT | `/api/members/:id` | Update member |
-| DELETE | `/api/members/:id` | Hapus member |
+Apa kepanjangan dari SQL? b. Structured Query Language 
 
-**Contoh pencarian:**
-- `/api/members?search=john` - Cari member dengan nama "john"
-- `/api/members?status=active` - Filter member yang aktif
+Manakah yang termasuk database Relasional (SQL)? c. PostgreSQL 
 
-## Contoh Request
+Perintah untuk mengambil data dari tabel adalah... c. SELECT 
 
-### Tambah Buku Baru
+Tipe data yang paling tepat untuk menyimpan harga barang agar presisi adalah... c. DECIMAL 
 
-```bash
-POST /api/books
-Content-Type: application/json
+Apa fungsi PRIMARY KEY pada sebuah tabel? b. Sebagai pengenal unik setiap baris data 
 
-{
-  "judul": "Harry Potter dan Batu Bertuah",
-  "penulis": "J.K. Rowling",
-  "penerbit": "Gramedia",
-  "tahun_terbit": 1997,
-  "kategori": "fiksi",
-  "stok": 5
-}
-```
+Query untuk menampilkan data produk yang stoknya habis (0) adalah... a. SELECT * FROM products WHERE stock = 0; 
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Buku berhasil ditambahkan",
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "judul": "Harry Potter dan Batu Bertuah",
-    "penulis": "J.K. Rowling",
-    "penerbit": "Gramedia",
-    "tahun_terbit": 1997,
-    "kategori": "fiksi",
-    "stok": 5
-  }
-}
-```
+Perintah ORDER BY price DESC artinya...  b. Urutkan harga dari termahal ke termurah 
 
-### Tambah Member Baru
+Apa yang terjadi jika kita menjalankan DELETE FROM products; tanpa WHERE?  c. Semua data di tabel products akan terhapus 
 
-```bash
-POST /api/members
-Content-Type: application/json
+Untuk mengubah data yang sudah ada, kita menggunakan perintah...  c.UPDATE 
 
-{
-  "nama": "John Doe",
-  "email": "john@example.com",
-  "telepon": "08123456789",
-  "alamat": "Jl. Sudirman No. 123, Jakarta"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Member berhasil ditambahkan",
-  "data": {
-    "id": "660e8400-e29b-41d4-a716-446655440000",
-    "nama": "John Doe",
-    "email": "john@example.com",
-    "telepon": "08123456789",
-    "alamat": "Jl. Sudirman No. 123, Jakarta",
-    "status": "active",
-    "tanggal_daftar": "2024-12-06T10:30:00.000Z"
-  }
-}
-```
-
-## Testing dengan Postman
-
-1. Import file `postman/Perpustakaan-API.postman_collection.json`
-2. Jalankan request yang ada di collection
-3. Done!
-
-## Struktur Project
-
-```
-src/
-├── controllers/      # Handle request & response
-├── services/         # Business logic
-├── routes/           # API routes
-├── models/           # Data types
-├── validations/      # Input validation rules
-├── middlewares/      # Custom middleware
-├── utils/            # Helper functions
-└── app.ts            # Express app setup
-```
-
-## Fitur Tambahan
-
-- **Request ID**: Setiap request punya unique ID di header `X-Request-ID`
-- **Request Timer**: Waktu proses tiap request otomatis di-log ke console
-- **Validasi Lengkap**: Semua input di-validasi sebelum di-proses
-- **Error Handling**: Error ditangkap dan dikembalikan dalam format yang konsisten
-
-## Catatan
-
-- Data disimpan di memory (hilang saat server restart)
-- Ada sample data buku dan member untuk testing
-- Validasi kategori buku: `fiksi`, `non-fiksi`, `referensi`, `komik`, `majalah`
-- Format telepon harus diawali `08`
-
-## Build untuk Production
-
-```bash
-# Compile TypeScript
-npm run build
-
-# Jalankan production
-npm start
-```
-
-## Troubleshooting
-
-**Port sudah digunakan?**
-```bash
-PORT=4000 npm run dev
-```
-
-**Module not found?**
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-## Author
-
-Dibuat dengan untuk Final Project Minggu 1
-
----
-
-**Happy coding!** 
+Tipe data VARCHAR(50) artinya...  b. Teks maksimal 50 karakter 
