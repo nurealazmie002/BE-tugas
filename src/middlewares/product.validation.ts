@@ -1,7 +1,8 @@
-import { body, param, query, validationResult, ValidationChain } from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
+import { body, param, validationResult, type ValidationChain } from 'express-validator';
+import type { Request, Response, NextFunction } from 'express';
 import { errorResponse } from '../utils/response';
 
+// Helper function untuk menjalankan validasi
 export const validate = (validations: ValidationChain[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     await Promise.all(validations.map(validation => validation.run(req)));
@@ -12,7 +13,7 @@ export const validate = (validations: ValidationChain[]) => {
     }
 
     const errorList = errors.array().map((err: any) => ({
-      field: err.type === 'field' ? err.path : 'unknown',
+      field: err.path || err.param || 'unknown',
       message: err.msg
     }));
 
@@ -21,38 +22,28 @@ export const validate = (validations: ValidationChain[]) => {
 };
 
 export const createProductValidation = [
-  body('nama')
+  body('name')
     .trim()
     .notEmpty().withMessage('Nama produk wajib diisi')
     .isLength({ min: 3 }).withMessage('Nama produk minimal 3 karakter'),
   
-  body('deskripsi')
+  body('description')
     .trim()
-    .notEmpty().withMessage('Deskripsi wajib diisi'),
+    .optional()
+    .isLength({ min: 10 }).withMessage('Deskripsi minimal 10 karakter jika diisi'),
   
-  body('harga')
+  body('price')
+    .notEmpty().withMessage('Harga wajib diisi')
     .isNumeric().withMessage('Harga harus angka')
-    .custom(value => value > 0).withMessage('Harga harus lebih dari 0'),
+    .custom((value: number) => value > 0).withMessage('Harga harus lebih dari 0'),
   
-  body('kategori')
-    .trim()
-    .notEmpty().withMessage('Kategori wajib diisi'),
-  
-  body('stok')
+  body('stock')
+    .notEmpty().withMessage('Stok wajib diisi')
     .isNumeric().withMessage('Stok harus angka')
-    .custom(value => value >= 0).withMessage('Stok tidak boleh negatif')
+    .custom((value: number) => value >= 0).withMessage('Stok tidak boleh negatif')
 ];
 
 export const getProductByIdValidation = [
   param('id')
     .isNumeric().withMessage('ID harus angka')
-];
-
-export const getProductsQueryValidation = [
-  query('page')
-    .optional()
-    .isInt({ min: 1 }).withMessage('Page harus angka minimal 1'),
-  query('limit')
-    .optional()
-    .isInt({ min: 1, max: 100 }).withMessage('Limit harus angka 1-100')
 ];

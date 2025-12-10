@@ -5,27 +5,21 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  searchProducts,
-  searchProductsByName,
-  getProductsByCategory
+  searchProducts
 } from '../controllers/product.controller';
 import { 
   validate, 
   createProductValidation, 
-  getProductByIdValidation,
-  getProductsQueryValidation
+  getProductByIdValidation 
 } from '../middlewares/product.validation';
 
 const router = Router();
 
-router.get('/search', searchProducts);
-router.get('/searchname', searchProductsByName);
-router.get('/categories', getProductsByCategory);
-
-router.get('/', validate(getProductsQueryValidation), getAllProducts);
-router.get('/:id', validate(getProductByIdValidation), getProductById);
-router.post('/', validate(createProductValidation), createProduct);
-router.put('/:id', validate(createProductValidation), updateProduct);
-router.delete('/:id', validate(getProductByIdValidation), deleteProduct);
+router.get('/products', getAllProducts);
+router.get('/products/search', searchProducts); // Route search harus sebelum :id
+router.get('/products/:id', validate(getProductByIdValidation), getProductById);
+router.post('/products', validate(createProductValidation), createProduct);
+router.put('/products/:id', validate(createProductValidation), updateProduct);
+router.delete('/products/:id', validate(getProductByIdValidation), deleteProduct);
 
 export default router;

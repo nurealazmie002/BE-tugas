@@ -1,11 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import productRoutes from './routes/product.route';
-import categoryRoutes from './routes/category.route';
 import { errorHandler } from './middlewares/error.handler';
-import { API_KEY } from './utils/env';
 
 const app = express();
 
@@ -14,59 +12,28 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`Request masuk: ${req.method} ${req.path}`);
+// Custom middleware (dari Hari 4)
+app.use((req, res, next) => {
   req.startTime = Date.now();
+  const apiKey = req.headers['x-api-key'] as string;
+  if (!apiKey) return res.status(401).json({ success: false, message: 'Kirim header X-API-Key' });
+  req.apiKey = apiKey;
   next();
 });
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const apiKey = req.headers['x-api-key'];
-  
-  if (!apiKey) {
-    return res.status(401).json({
-      success: false,
-      message: "Header X-API-Key wajib diisi untuk akses API!"
-    });
-  }
-  
-  if (apiKey !== API_KEY) {
-    return res.status(403).json({
-      success: false,
-      message: "API Key tidak valid!"
-    });
-  }
-  
-  req.apiKey = apiKey as string;
-  next();
+// Routes
+app.get('/', (req, res) => {
+  const waktu = Date.now() - (req.startTime || 0);
+  res.json({ message: `Halo pemilik API Key: ${req.apiKey}! Hari 5 – MVC E-Commerce + Service`, waktu_proses: `${waktu}ms` });
 });
 
-app.get('/', (req: Request, res: Response) => {
-  const waktuProses = Date.now() - (req.startTime || Date.now());
-  res.json({ 
-    success: true,
-    message: 'API E-Commerce – Hari 5 (MVC + Service Layer)',
-    data: {
-      hari: 5,
-      status: "Server hidup!",
-      arsitektur: "MVC + Service Layer",
-      waktuProses: `${waktuProses}ms`,
-      apiKey: req.apiKey
-    }
-  });
-});
+app.use('/api/v1', productRoutes);
 
-app.get('/api/error-test', (req: Request, res: Response) => {
-  throw new Error('Ini adalah test error yang disengaja!');
-});
-
-app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
-
-app.use((req: Request, res: Response) => {
-  throw new Error(`Route ${req.originalUrl} tidak ada di API E-Commerce`);
-});
-
+// Error handler harus di paling bawah!
+// Middleware error handling dengan 4 parameter (`err, req, res, next`) harus selalu 
+// diletakkan PALING AKHIR di antara semua middleware dan route lainnya. 
+// Ini memastikan bahwa semua error dari route atau middleware sebelumnya 
+// dapat ditangkap dan diproses secara terpusat.
 app.use(errorHandler);
 
 export default app;
