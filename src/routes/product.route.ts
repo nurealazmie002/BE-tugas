@@ -7,8 +7,8 @@ import {
   deleteProduct,
   searchProducts
 } from '../controllers/product.controller';
+import { validate } from '../utils/validate';
 import { 
-  validate, 
   createProductValidation, 
   getProductByIdValidation 
 } from '../middlewares/product.validation';
