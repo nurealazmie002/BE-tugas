@@ -1,0 +1,15 @@
+model Store {
+  id          Int       @id @default(autoincrement())
+  name        String
+  address     String?
+  phone       String?
+  email       String?   @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+
+  @@map("stores")
+}

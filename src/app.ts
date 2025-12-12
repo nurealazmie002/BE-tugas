@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import productRoutes from './routes/product.route';
 import categoryRoutes from './routes/category.route';
+import storeRoutes from './routes/store.route'; // ← Tambahkan ini
 import { errorHandler } from './middlewares/error.handler';
 
 const app = express();
@@ -21,7 +22,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
 app.get('/', (req, res) => {
   const waktu = Date.now() - (req.startTime || 0);
   res.json({ message: `Halo pemilik API Key: ${req.apiKey}! Hari 5 – MVC E-Commerce + Service`, waktu_proses: `${waktu}ms` });
@@ -29,12 +29,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1', productRoutes);
 app.use('/api/v1', categoryRoutes);
+app.use('/api/v1', storeRoutes); 
 
-// Error handler harus di paling bawah!
-// Middleware error handling dengan 4 parameter (`err, req, res, next`) harus selalu 
-// diletakkan PALING AKHIR di antara semua middleware dan route lainnya. 
-// Ini memastikan bahwa semua error dari route atau middleware sebelumnya 
-// dapat ditangkap dan diproses secara terpusat.
 app.use(errorHandler);
 
 export default app;

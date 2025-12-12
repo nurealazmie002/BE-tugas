@@ -4,7 +4,8 @@ import type { Product } from '../generated/client';
 export const getAllProducts = async (): Promise<Product[]> => {
   return await prisma.product.findMany({
     include: {
-      category: true
+      category: true,
+      store: true
     }
   });
 };
@@ -40,7 +41,7 @@ export const createProduct = async (data: {
 };
 
 export const updateProduct = async (id: number, data: Partial<Product>): Promise<Product> => {
-  await getProductById(id); // Cek existance
+  await getProductById(id); 
 
   return await prisma.product.update({
     where: { id },
@@ -49,7 +50,7 @@ export const updateProduct = async (id: number, data: Partial<Product>): Promise
 };
 
 export const deleteProduct = async (id: number): Promise<Product> => {
-  await getProductById(id); // Cek existance
+  await getProductById(id); 
 
   return await prisma.product.delete({
     where: { id },
