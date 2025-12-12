@@ -4,7 +4,7 @@ export const createProductValidation = [
   body('name')
     .trim()
     .notEmpty().withMessage('Nama produk wajib diisi')
-    .isLength({ min: 3 }).withMessage('Nama produk minimal 3 karakter'),
+    .isLength({ min: 4 }).withMessage('Nama produk minimal 3 karakter'),
   
   body('description')
     .trim()
