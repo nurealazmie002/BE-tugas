@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import productRoutes from './routes/product.route';
 import categoryRoutes from './routes/category.route';
-import storeRoutes from './routes/store.route'; // ← Tambahkan ini
+import storeRoutes from './routes/store.route'; 
 import { errorHandler } from './middlewares/error.handler';
 
 const app = express();
