@@ -1,8 +1,11 @@
-import  prisma  from '../prisma';
+import prisma from '../prisma';
 import type { Product } from '../generated/client';
 
 export const getAllProducts = async (): Promise<Product[]> => {
   return await prisma.product.findMany({
+    where: {
+      deletedAt: null 
+    },
     include: {
       category: true,
       store: true
@@ -11,8 +14,11 @@ export const getAllProducts = async (): Promise<Product[]> => {
 };
 
 export const getProductById = async (id: number): Promise<Product> => {
-  const product = await prisma.product.findUnique({
-    where: { id },
+  const product = await prisma.product.findFirst({ 
+    where: { 
+      id,
+      deletedAt: null 
+    },
   });
   
   if (!product) {
@@ -52,8 +58,11 @@ export const updateProduct = async (id: number, data: Partial<Product>): Promise
 export const deleteProduct = async (id: number): Promise<Product> => {
   await getProductById(id); 
 
-  return await prisma.product.delete({
+  return await prisma.product.update({
     where: { id },
+    data: {
+      deletedAt: new Date()
+    }
   });
 };
 
@@ -63,7 +72,27 @@ export const searchProducts = async (name?: string, maxPrice?: number): Promise<
     result = result.filter(p => p.name.toLowerCase().includes(name.toLowerCase()));
   }
   if (maxPrice) {
-    result = result.filter(p => p.price.toNumber() <= maxPrice);
+    result = result.filter(p => Number(p.price) <= maxPrice); 
   }
   return result;
+};
+
+export const restoreProduct = async (id: number): Promise<Product> => {
+  const checkProduct = await prisma.product.findFirst({
+    where: { 
+      id,
+      NOT: { deletedAt: null } 
+    },
+  });
+
+  if (!checkProduct) {
+    throw new Error('Product not found in trash bin (Id incorrect or product is active)');
+  }
+
+  return await prisma.product.update({
+    where: { id },
+    data: {
+      deletedAt: null 
+    }
+  });
 };

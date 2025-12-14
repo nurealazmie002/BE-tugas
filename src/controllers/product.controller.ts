@@ -39,3 +39,9 @@ export const searchProducts = asyncHandler(async (req: Request, res: Response) =
   );
   return successResponse(res, 'Hasil pencarian', products);
 });
+
+export const restoreProduct = asyncHandler(async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id!);
+  const product = await ProductService.restoreProduct(id);
+  return successResponse(res, 'Produk berhasil dikembalikan (Restore)', product);
+});
