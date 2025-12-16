@@ -1,11 +1,11 @@
-import  prisma  from "../prisma";
-import type { Category } from "../generated/client";
+import prisma from "../prisma"; 
+import type { Category } from "../generated/client"; 
 
 export const getAllCategories = async (): Promise<Category[]> => {
     return await prisma.category.findMany();
 };
 
-export const getCategoryById = async (id: number): Promise<Category> => {
+export const getCategoryById = async (id: string): Promise<Category> => {
     const category = await prisma.category.findUnique({
         where: { id },
     });
@@ -25,16 +25,15 @@ export const createCategory = async (data: { name: string }): Promise<Category> 
     });
 };
 
-export const updateCategory = async (id: number, data: Partial<Category>): Promise<Category> => {
+export const updateCategory = async (id: string, data: Partial<Category>): Promise<Category> => {
     await getCategoryById(id); 
-
     return await prisma.category.update({
         where: { id },
         data,
     });
 };
 
-export const deleteCategory = async (id: number): Promise<Category> => {
+export const deleteCategory = async (id: string): Promise<Category> => {
     await getCategoryById(id); 
 
     return await prisma.category.delete({
@@ -43,9 +42,12 @@ export const deleteCategory = async (id: number): Promise<Category> => {
 };
 
 export const searchCategories = async (name?: string): Promise<Category[]> => {
-    let result = await getAllCategories();
-    if (name) {
-        result = result.filter(c => c.name.toLowerCase().includes(name.toLowerCase()));
-    }
-    return result;
+    return await prisma.category.findMany({
+        where: name ? {
+            name: {
+                contains: name,
+                mode: 'insensitive' 
+            }
+        } : {}
+    });
 };

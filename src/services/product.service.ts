@@ -1,5 +1,5 @@
 import prisma from '../prisma';
-import type { Product } from '../generated/client';
+import type { Product } from '../generated/client'; 
 
 export const getAllProducts = async (): Promise<Product[]> => {
   return await prisma.product.findMany({
@@ -13,12 +13,16 @@ export const getAllProducts = async (): Promise<Product[]> => {
   });
 };
 
-export const getProductById = async (id: number): Promise<Product> => {
+export const getProductById = async (id: string): Promise<Product> => {
   const product = await prisma.product.findFirst({ 
     where: { 
       id,
       deletedAt: null 
     },
+    include: { 
+        category: true,
+        store: true
+    }
   });
   
   if (!product) {
@@ -33,7 +37,8 @@ export const createProduct = async (data: {
   price: number; 
   stock: number;
   description?: string;
-  categoryId: number;
+  categoryId: string;
+  storeId: string;
 }): Promise<Product> => {
   return await prisma.product.create({
     data: {
@@ -41,21 +46,21 @@ export const createProduct = async (data: {
       description: data.description ?? null,
       price: data.price,
       stock: data.stock,
-      categoryId: data.categoryId
+      categoryId: data.categoryId,
+      storeId: data.storeId
     },
   });
 };
 
-export const updateProduct = async (id: number, data: Partial<Product>): Promise<Product> => {
+export const updateProduct = async (id: string, data: Partial<Product>): Promise<Product> => {
   await getProductById(id); 
-
   return await prisma.product.update({
     where: { id },
     data,
   });
 };
 
-export const deleteProduct = async (id: number): Promise<Product> => {
+export const deleteProduct = async (id: string): Promise<Product> => {
   await getProductById(id); 
 
   return await prisma.product.update({
@@ -67,17 +72,33 @@ export const deleteProduct = async (id: number): Promise<Product> => {
 };
 
 export const searchProducts = async (name?: string, maxPrice?: number): Promise<Product[]> => {
-  let result = await getAllProducts();
+  const whereClause: any = {
+      deletedAt: null 
+  };
+
   if (name) {
-    result = result.filter(p => p.name.toLowerCase().includes(name.toLowerCase()));
+      whereClause.name = {
+          contains: name,
+          mode: 'insensitive'
+      };
   }
+
   if (maxPrice) {
-    result = result.filter(p => Number(p.price) <= maxPrice); 
+      whereClause.price = {
+          lte: maxPrice 
+      };
   }
-  return result;
+
+  return await prisma.product.findMany({
+      where: whereClause,
+      include: {
+          category: true,
+          store: true
+      }
+  });
 };
 
-export const restoreProduct = async (id: number): Promise<Product> => {
+export const restoreProduct = async (id: string): Promise<Product> => {
   const checkProduct = await prisma.product.findFirst({
     where: { 
       id,

@@ -9,24 +9,27 @@ export const getAllStores = asyncHandler(async (_req: Request, res: Response) =>
 });
 
 export const getStoreById = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id!);
+  const id = req.params.id!; 
+  
   const store = await StoreService.getStoreById(id);
   return successResponse(res, 'Toko ditemukan', store);
 });
 
 export const createStore = asyncHandler(async (req: Request, res: Response) => {
   const store = await StoreService.createStore(req.body);
-  return successResponse(res, 'Toko berhasil ditambahkan', store, null, 201);
+  return successResponse(res, 'Toko berhasil ditambahkan', store, 201);
 });
 
 export const updateStore = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id!);
+  const id = req.params.id!;
+  
   const store = await StoreService.updateStore(id, req.body);
   return successResponse(res, 'Toko berhasil diupdate', store);
 });
 
 export const deleteStore = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id!);
+  const id = req.params.id!;
+  
   const store = await StoreService.deleteStore(id);
   return successResponse(res, 'Toko berhasil dihapus', store);
 });
@@ -41,7 +44,8 @@ export const searchStores = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const getStoreProducts = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id!);
+  const id = req.params.id!;
+  
   const products = await StoreService.getStoreProducts(id);
   return successResponse(res, 'Produk dari toko', products);
 });

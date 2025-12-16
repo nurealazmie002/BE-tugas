@@ -16,7 +16,7 @@ import {
 const router = Router();
 
 router.get('/categories', getAllCategories);
-router.get('/categories/search', searchCategories); // Route search harus sebelum :id
+router.get('/categories/search', searchCategories); 
 router.get('/categories/:id', validate(getCategoryByIdValidation), getCategoryById);
 router.post('/categories', validate(createCategoryValidation), createCategory);
 router.put('/categories/:id', validate(createCategoryValidation), updateCategory);

@@ -20,22 +20,12 @@ export type StoreModel = runtime.Types.Result.DefaultSelection<Prisma.$StorePayl
 
 export type AggregateStore = {
   _count: StoreCountAggregateOutputType | null
-  _avg: StoreAvgAggregateOutputType | null
-  _sum: StoreSumAggregateOutputType | null
   _min: StoreMinAggregateOutputType | null
   _max: StoreMaxAggregateOutputType | null
 }
 
-export type StoreAvgAggregateOutputType = {
-  id: number | null
-}
-
-export type StoreSumAggregateOutputType = {
-  id: number | null
-}
-
 export type StoreMinAggregateOutputType = {
-  id: number | null
+  id: string | null
   name: string | null
   address: string | null
   phone: string | null
@@ -47,7 +37,7 @@ export type StoreMinAggregateOutputType = {
 }
 
 export type StoreMaxAggregateOutputType = {
-  id: number | null
+  id: string | null
   name: string | null
   address: string | null
   phone: string | null
@@ -71,14 +61,6 @@ export type StoreCountAggregateOutputType = {
   _all: number
 }
 
-
-export type StoreAvgAggregateInputType = {
-  id?: true
-}
-
-export type StoreSumAggregateInputType = {
-  id?: true
-}
 
 export type StoreMinAggregateInputType = {
   id?: true
@@ -155,18 +137,6 @@ export type StoreAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: StoreAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: StoreSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: StoreMinAggregateInputType
@@ -197,14 +167,12 @@ export type StoreGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: StoreCountAggregateInputType | true
-  _avg?: StoreAvgAggregateInputType
-  _sum?: StoreSumAggregateInputType
   _min?: StoreMinAggregateInputType
   _max?: StoreMaxAggregateInputType
 }
 
 export type StoreGroupByOutputType = {
-  id: number
+  id: string
   name: string
   address: string | null
   phone: string | null
@@ -214,8 +182,6 @@ export type StoreGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   _count: StoreCountAggregateOutputType | null
-  _avg: StoreAvgAggregateOutputType | null
-  _sum: StoreSumAggregateOutputType | null
   _min: StoreMinAggregateOutputType | null
   _max: StoreMaxAggregateOutputType | null
 }
@@ -239,7 +205,7 @@ export type StoreWhereInput = {
   AND?: Prisma.StoreWhereInput | Prisma.StoreWhereInput[]
   OR?: Prisma.StoreWhereInput[]
   NOT?: Prisma.StoreWhereInput | Prisma.StoreWhereInput[]
-  id?: Prisma.IntFilter<"Store"> | number
+  id?: Prisma.UuidFilter<"Store"> | string
   name?: Prisma.StringFilter<"Store"> | string
   address?: Prisma.StringNullableFilter<"Store"> | string | null
   phone?: Prisma.StringNullableFilter<"Store"> | string | null
@@ -265,7 +231,7 @@ export type StoreOrderByWithRelationInput = {
 }
 
 export type StoreWhereUniqueInput = Prisma.AtLeast<{
-  id?: number
+  id?: string
   email?: string
   AND?: Prisma.StoreWhereInput | Prisma.StoreWhereInput[]
   OR?: Prisma.StoreWhereInput[]
@@ -291,17 +257,15 @@ export type StoreOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.StoreCountOrderByAggregateInput
-  _avg?: Prisma.StoreAvgOrderByAggregateInput
   _max?: Prisma.StoreMaxOrderByAggregateInput
   _min?: Prisma.StoreMinOrderByAggregateInput
-  _sum?: Prisma.StoreSumOrderByAggregateInput
 }
 
 export type StoreScalarWhereWithAggregatesInput = {
   AND?: Prisma.StoreScalarWhereWithAggregatesInput | Prisma.StoreScalarWhereWithAggregatesInput[]
   OR?: Prisma.StoreScalarWhereWithAggregatesInput[]
   NOT?: Prisma.StoreScalarWhereWithAggregatesInput | Prisma.StoreScalarWhereWithAggregatesInput[]
-  id?: Prisma.IntWithAggregatesFilter<"Store"> | number
+  id?: Prisma.UuidWithAggregatesFilter<"Store"> | string
   name?: Prisma.StringWithAggregatesFilter<"Store"> | string
   address?: Prisma.StringNullableWithAggregatesFilter<"Store"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Store"> | string | null
@@ -313,6 +277,7 @@ export type StoreScalarWhereWithAggregatesInput = {
 }
 
 export type StoreCreateInput = {
+  id?: string
   name: string
   address?: string | null
   phone?: string | null
@@ -325,7 +290,7 @@ export type StoreCreateInput = {
 }
 
 export type StoreUncheckedCreateInput = {
-  id?: number
+  id?: string
   name: string
   address?: string | null
   phone?: string | null
@@ -338,6 +303,7 @@ export type StoreUncheckedCreateInput = {
 }
 
 export type StoreUpdateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -350,7 +316,7 @@ export type StoreUpdateInput = {
 }
 
 export type StoreUncheckedUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -363,7 +329,7 @@ export type StoreUncheckedUpdateInput = {
 }
 
 export type StoreCreateManyInput = {
-  id?: number
+  id?: string
   name: string
   address?: string | null
   phone?: string | null
@@ -375,6 +341,7 @@ export type StoreCreateManyInput = {
 }
 
 export type StoreUpdateManyMutationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -386,7 +353,7 @@ export type StoreUpdateManyMutationInput = {
 }
 
 export type StoreUncheckedUpdateManyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -397,9 +364,9 @@ export type StoreUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type StoreNullableScalarRelationFilter = {
-  is?: Prisma.StoreWhereInput | null
-  isNot?: Prisma.StoreWhereInput | null
+export type StoreScalarRelationFilter = {
+  is?: Prisma.StoreWhereInput
+  isNot?: Prisma.StoreWhereInput
 }
 
 export type StoreCountOrderByAggregateInput = {
@@ -412,10 +379,6 @@ export type StoreCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type StoreAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder
 }
 
 export type StoreMaxOrderByAggregateInput = {
@@ -442,22 +405,16 @@ export type StoreMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type StoreSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-}
-
 export type StoreCreateNestedOneWithoutProductsInput = {
   create?: Prisma.XOR<Prisma.StoreCreateWithoutProductsInput, Prisma.StoreUncheckedCreateWithoutProductsInput>
   connectOrCreate?: Prisma.StoreCreateOrConnectWithoutProductsInput
   connect?: Prisma.StoreWhereUniqueInput
 }
 
-export type StoreUpdateOneWithoutProductsNestedInput = {
+export type StoreUpdateOneRequiredWithoutProductsNestedInput = {
   create?: Prisma.XOR<Prisma.StoreCreateWithoutProductsInput, Prisma.StoreUncheckedCreateWithoutProductsInput>
   connectOrCreate?: Prisma.StoreCreateOrConnectWithoutProductsInput
   upsert?: Prisma.StoreUpsertWithoutProductsInput
-  disconnect?: Prisma.StoreWhereInput | boolean
-  delete?: Prisma.StoreWhereInput | boolean
   connect?: Prisma.StoreWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutProductsInput, Prisma.StoreUpdateWithoutProductsInput>, Prisma.StoreUncheckedUpdateWithoutProductsInput>
 }
@@ -467,6 +424,7 @@ export type BoolFieldUpdateOperationsInput = {
 }
 
 export type StoreCreateWithoutProductsInput = {
+  id?: string
   name: string
   address?: string | null
   phone?: string | null
@@ -478,7 +436,7 @@ export type StoreCreateWithoutProductsInput = {
 }
 
 export type StoreUncheckedCreateWithoutProductsInput = {
-  id?: number
+  id?: string
   name: string
   address?: string | null
   phone?: string | null
@@ -506,6 +464,7 @@ export type StoreUpdateToOneWithWhereWithoutProductsInput = {
 }
 
 export type StoreUpdateWithoutProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -517,7 +476,7 @@ export type StoreUpdateWithoutProductsInput = {
 }
 
 export type StoreUncheckedUpdateWithoutProductsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -623,7 +582,7 @@ export type $StorePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     products: Prisma.$ProductPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: number
+    id: string
     name: string
     address: string | null
     phone: string | null
@@ -1056,7 +1015,7 @@ export interface Prisma__StoreClient<T, Null = never, ExtArgs extends runtime.Ty
  * Fields of the Store model
  */
 export interface StoreFieldRefs {
-  readonly id: Prisma.FieldRef<"Store", 'Int'>
+  readonly id: Prisma.FieldRef<"Store", 'String'>
   readonly name: Prisma.FieldRef<"Store", 'String'>
   readonly address: Prisma.FieldRef<"Store", 'String'>
   readonly phone: Prisma.FieldRef<"Store", 'String'>

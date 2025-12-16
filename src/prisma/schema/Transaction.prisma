@@ -1,0 +1,12 @@
+model Transaction {
+    id String @id @default(uuid()) @db.Uuid
+    total Decimal @db.Decimal(10, 2)
+    createdAt DateTime @default(now())
+
+    userId String @db.Uuid
+    user User @relation(fields: [userId], references: [id])
+
+    items TransactionItem[]
+
+    @@map("transactions")
+}
