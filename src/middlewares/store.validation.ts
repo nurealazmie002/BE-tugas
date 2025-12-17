@@ -37,7 +37,7 @@ export const createStoreValidation = [
 
 export const updateStoreValidation = [
   param('id')
-    .isNumeric().withMessage('ID harus angka'),
+    .isUUID().withMessage('ID harus berupa UUID yang valid'),
   
   body('name')
     .trim()
@@ -75,19 +75,19 @@ export const updateStoreValidation = [
 
 export const getStoreByIdValidation = [
   param('id')
-    .isNumeric().withMessage('ID harus angka')
+    .isUUID().withMessage('ID harus berupa UUID yang valid')
 ];
 
 export const deleteStoreValidation = [
   param('id')
-    .isNumeric().withMessage('ID harus angka')
+    .isUUID().withMessage('ID harus berupa UUID yang valid')
 ];
 
 export const searchStoresValidation = [
-  query('name')
+  query('q')
     .optional()
     .trim()
-    .isLength({ min: 2 }).withMessage('Keyword pencarian minimal 2 karakter'),
+    .isLength({ min: 1 }).withMessage('Keyword pencarian minimal 1 karakter'),
   
   query('is_active')
     .optional()

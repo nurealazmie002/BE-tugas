@@ -1,5 +1,4 @@
 model Store {
-  // Ubah Int menjadi String UUID agar sinkron dengan Product
   id          String    @id @default(uuid()) @db.Uuid
   name        String
   address     String?
@@ -11,6 +10,9 @@ model Store {
   updatedAt   DateTime  @updatedAt
 
   products    Product[]
+
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("stores")
 }

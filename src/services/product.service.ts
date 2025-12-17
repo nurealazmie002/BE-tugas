@@ -1,45 +1,52 @@
 import prisma from '../prisma';
-import type { Product } from '../generated/client'; 
+import type { Product } from '../generated/client';
+
+interface CreateProductInput {
+  name: string;
+  price: number;
+  stock: number;
+  description?: string;
+  categoryId: string;
+  storeId: string; 
+}
+
+type UpdateProductInput = Partial<CreateProductInput>;
 
 export const getAllProducts = async (): Promise<Product[]> => {
   return await prisma.product.findMany({
     where: {
-      deletedAt: null 
+      deletedAt: null, 
     },
     include: {
-      category: true,
-      store: true
+      category: true, 
+      store: true,    
+    },
+    orderBy: {
+      createdAt: 'desc'
     }
   });
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
-  const product = await prisma.product.findFirst({ 
-    where: { 
+  const product = await prisma.product.findFirst({
+    where: {
       id,
-      deletedAt: null 
+      deletedAt: null,
     },
-    include: { 
-        category: true,
-        store: true
-    }
+    include: {
+      category: true,
+      store: true,
+    },
   });
-  
+
   if (!product) {
     throw new Error('Product not found');
   }
-  
+
   return product;
 };
 
-export const createProduct = async (data: { 
-  name: string; 
-  price: number; 
-  stock: number;
-  description?: string;
-  categoryId: string;
-  storeId: string;
-}): Promise<Product> => {
+export const createProduct = async (data: CreateProductInput): Promise<Product> => {
   return await prisma.product.create({
     data: {
       name: data.name,
@@ -47,62 +54,65 @@ export const createProduct = async (data: {
       price: data.price,
       stock: data.stock,
       categoryId: data.categoryId,
-      storeId: data.storeId
+      storeId: data.storeId, 
     },
   });
 };
 
-export const updateProduct = async (id: string, data: Partial<Product>): Promise<Product> => {
-  await getProductById(id); 
-  return await prisma.product.update({
-    where: { id },
-    data,
-  });
-};
-
-export const deleteProduct = async (id: string): Promise<Product> => {
-  await getProductById(id); 
+export const updateProduct = async (id: string, data: UpdateProductInput): Promise<Product> => {
+  await getProductById(id);
 
   return await prisma.product.update({
     where: { id },
     data: {
-      deletedAt: new Date()
-    }
+      ...data,
+    },
+  });
+};
+
+export const deleteProduct = async (id: string): Promise<Product> => {
+  await getProductById(id);
+
+  return await prisma.product.update({
+    where: { id },
+    data: {
+      deletedAt: new Date(),
+    },
   });
 };
 
 export const searchProducts = async (name?: string, maxPrice?: number): Promise<Product[]> => {
   const whereClause: any = {
-      deletedAt: null 
+    deletedAt: null,
   };
 
   if (name) {
-      whereClause.name = {
-          contains: name,
-          mode: 'insensitive'
-      };
+    whereClause.name = {
+      contains: name,
+      mode: 'insensitive', 
+    };
   }
 
   if (maxPrice) {
-      whereClause.price = {
-          lte: maxPrice 
-      };
+    whereClause.price = {
+      lte: maxPrice, 
+    };
   }
 
   return await prisma.product.findMany({
-      where: whereClause,
-      include: {
-          category: true,
-          store: true
-      }
+    where: whereClause,
+    include: {
+      category: true,
+      store: true,
+    },
   });
 };
 
 export const restoreProduct = async (id: string): Promise<Product> => {
   const checkProduct = await prisma.product.findFirst({
-    where: { 
+    where: {
       id,
-      NOT: { deletedAt: null } 
+      NOT: { deletedAt: null },
     },
   });
 
@@ -113,7 +123,7 @@ export const restoreProduct = async (id: string): Promise<Product> => {
   return await prisma.product.update({
     where: { id },
     data: {
-      deletedAt: null 
-    }
+      deletedAt: null,
+    },
   });
 };

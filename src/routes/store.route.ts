@@ -8,15 +8,16 @@ import {
   searchStoresValidation 
 } from '../middlewares/store.validation';
 import { validate } from '../utils/validate';
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
 router.get('/stores', StoreController.getAllStores);
-router.get('/stores/search', validate(searchStoresValidation), StoreController.searchStores); // PENTING: Search sebelum ID
+router.get('/stores/search', validate(searchStoresValidation), StoreController.searchStores);
 router.get('/stores/:id', validate(getStoreByIdValidation), StoreController.getStoreById);
 router.get('/stores/:id/products', validate(getStoreByIdValidation), StoreController.getStoreProducts);
-router.post('/stores', validate(createStoreValidation), StoreController.createStore);
-router.put('/stores/:id', validate(updateStoreValidation), StoreController.updateStore);
-router.delete('/stores/:id', validate(deleteStoreValidation), StoreController.deleteStore);
+router.post('/stores', authenticate, validate(createStoreValidation), StoreController.createStore);
+router.put('/stores/:id', authenticate, validate(updateStoreValidation), StoreController.updateStore);
+router.delete('/stores/:id', authenticate, validate(deleteStoreValidation), StoreController.deleteStore);
 
 export default router;

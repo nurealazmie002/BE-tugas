@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { checkout, getHistory } from "../controllers/transaction.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
-const router = Router()
+const router = Router();
 
-router.post("/transactions/checkout", checkout )
-router.get("/transactions/history", getHistory)
+router.post("/transactions/checkout", authenticate, checkout);
+router.get("/transactions/history", authenticate, getHistory);
 
-export default router
+export default router;

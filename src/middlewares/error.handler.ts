@@ -6,7 +6,7 @@ import { Prisma } from '#generated/client';
 export const errorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('ERROR:', err.message);
 
-  let statusCode = 400; // Default status code
+  let statusCode = 400; 
   let message = err.message || 'Terjadi kesalahan server';
 
   if (err instanceof Prisma.PrismaClientKnownRequestError) {

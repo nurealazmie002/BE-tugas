@@ -1,98 +1,83 @@
 import prisma from '../prisma';
-import type { Store } from '../generated/client'; 
 
-export const getAllStores = async (): Promise<Store[]> => {
-  return await prisma.store.findMany({
-    include: {
-      products: {
-        include: {
-          category: true
-        }
-      }
-    }
-  });
-};
-
-export const getStoreById = async (id: string): Promise<Store> => {
-  const store = await prisma.store.findUnique({
-    where: { id },
-    include: {
-      products: {
-        include: {
-          category: true
-        }
-      }
-    }
-  });
-  
-  if (!store) {
-    throw new Error('Store not found');
-  }
-  
-  return store;
-};
-
-export const createStore = async (data: { 
+interface CreateStoreInput {
   name: string;
   address?: string;
   phone?: string;
   email?: string;
   description?: string;
-  isActive?: boolean;
-}): Promise<Store> => {
+}
+
+export const getAllStores = async () => {
+  return await prisma.store.findMany({
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true
+        }
+      }
+    }
+  });
+};
+
+export const createStore = async (userId: string, data: CreateStoreInput) => {
   return await prisma.store.create({
     data: {
-      name: data.name,
-      address: data.address ?? null,
-      phone: data.phone ?? null,
-      email: data.email ?? null,
-      description: data.description ?? null,
-      isActive: data.isActive ?? true
+      ...data,
+      userId: userId,
     },
   });
 };
 
-export const updateStore = async (id: string, data: Partial<Store>): Promise<Store> => {
-  await getStoreById(id); 
+export const getStoreById = async (id: string) => {
+  const store = await prisma.store.findUnique({
+    where: { id },
+    include: {
+      products: true,
+    },
+  });
+  
+  if (!store) throw new Error("Store tidak ditemukan");
+  return store;
+};
 
+export const updateStore = async (id: string, data: Partial<CreateStoreInput>) => {
+  await getStoreById(id);
   return await prisma.store.update({
     where: { id },
     data,
   });
 };
 
-export const deleteStore = async (id: string): Promise<Store> => {
-  await getStoreById(id); 
-
+export const deleteStore = async (id: string) => {
+  await getStoreById(id);
   return await prisma.store.delete({
     where: { id },
   });
 };
 
-export const searchStores = async (name?: string, isActive?: boolean): Promise<Store[]> => {
+export const searchStores = async (keyword: string) => {
   return await prisma.store.findMany({
     where: {
-      ...(name && {
-        name: {
-          contains: name,
-          mode: 'insensitive' 
-        }
-      }),
-      ...(isActive !== undefined && { isActive })
+      OR: [
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { description: { contains: keyword, mode: 'insensitive' } },
+        { address: { contains: keyword, mode: 'insensitive' } },
+      ],
     },
     include: {
-      products: true
+      user: {
+        select: {
+          name: true,
+          email: true
+        }
+      }
     }
   });
 };
 
 export const getStoreProducts = async (storeId: string) => {
-  await getStoreById(storeId); 
-  
-  return await prisma.product.findMany({
-    where: { storeId }, 
-    include: {
-      category: true
-    }
-  });
+  const store = await getStoreById(storeId);
+  return store.products;
 };

@@ -1,21 +1,51 @@
-import { validationResult, type ValidationChain } from 'express-validator';
 import type { Request, Response, NextFunction } from 'express';
-import { errorResponse } from './response';
+import { ZodError, type ZodType } from 'zod';
+import { validationResult, type ValidationChain } from 'express-validator';
 
-export const validate = (validations: ValidationChain[]) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        await Promise.all(validations.map(validation => validation.run(req)));
+export const validate = (schemas: ZodType | ValidationChain[]) => 
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    if (Array.isArray(schemas)) {
+      await Promise.all(schemas.map((validation) => validation.run(req)));
 
-        const errors = validationResult(req);
-        if (errors.isEmpty()) {
-            return next();
-        }
+      const errors = validationResult(req);
+      if (errors.isEmpty()) {
+        return next();
+      }
 
-        const errorList = errors.array().map((err: any) => ({
-            field: err.path || err.param || 'unknown',
-            message: err.msg
-        }));
+      return res.status(400).json({
+        success: false,
+        message: 'Validasi gagal',
+        errors: errors.array().map((err: any) => ({
+          field: err.path || err.param,
+          message: err.msg,
+        })),
+      });
+    }
 
-        return errorResponse(res, 'Validasi gagal', 400, errorList);
-    };
-};
+    try {
+      await schemas.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+
+      return next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validasi gagal',
+          errors: error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        });
+      }
+      
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Internal server error during validation' 
+      });
+    }
+  };
