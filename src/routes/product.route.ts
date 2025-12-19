@@ -14,14 +14,28 @@ import {
   getProductByIdValidation,
 } from '../middlewares/product.validation';
 import { authenticate } from "../middlewares/auth.middleware";
+import { upload } from '../middlewares/upload.middleware'; 
 
 const router = Router();
 
 router.get('/products', getAllProducts);
 router.get('/products/search', searchProducts); 
 router.get('/products/:id', validate(getProductByIdValidation), getProductById);
-router.post('/products', authenticate, validate(createProductValidation), createProduct);
-router.put('/products/:id', authenticate, validate(createProductValidation), updateProduct); 
+
+router.post('/products', 
+  authenticate, 
+  upload.single('image'), 
+  validate(createProductValidation), 
+  createProduct
+);
+
+router.put('/products/:id', 
+  authenticate, 
+  upload.single('image'), 
+  validate(createProductValidation), 
+  updateProduct
+); 
+
 router.delete('/products/:id', authenticate, validate(getProductByIdValidation), deleteProduct);
 router.patch('/products/:id/restore', authenticate, validate(getProductByIdValidation), restoreProduct);
 

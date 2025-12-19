@@ -7,7 +7,8 @@ interface CreateProductInput {
   stock: number;
   description?: string;
   categoryId: string;
-  storeId: string; 
+  storeId: string;
+  image?: string; 
 }
 
 type UpdateProductInput = Partial<CreateProductInput>;
@@ -54,7 +55,8 @@ export const createProduct = async (data: CreateProductInput): Promise<Product> 
       price: data.price,
       stock: data.stock,
       categoryId: data.categoryId,
-      storeId: data.storeId, 
+      storeId: data.storeId,
+      image: data.image ?? null, 
     },
   });
 };
@@ -66,6 +68,8 @@ export const updateProduct = async (id: string, data: UpdateProductInput): Promi
     where: { id },
     data: {
       ...data,
+      // Jika image di-pass sebagai undefined, jangan update field image
+      ...(data.image !== undefined && { image: data.image }),
     },
   });
 };

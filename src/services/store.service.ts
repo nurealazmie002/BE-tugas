@@ -13,7 +13,7 @@ export const getAllStores = async () => {
     include: {
       user: {
         select: {
-          name: true,
+          username: true,
           email: true
         }
       }
@@ -69,7 +69,7 @@ export const searchStores = async (keyword: string) => {
     include: {
       user: {
         select: {
-          name: true,
+          username: true,
           email: true
         }
       }

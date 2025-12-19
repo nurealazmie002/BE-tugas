@@ -16,7 +16,12 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await ProductService.createProduct(req.body);
+  const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+  const product = await ProductService.createProduct({
+    ...req.body,
+    image: imagePath, 
+  });
   
   return successResponse(res, 'Produk berhasil ditambahkan', product, 201);
 });
@@ -24,7 +29,12 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
 export const updateProduct = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id!;
   
-  const product = await ProductService.updateProduct(id, req.body);
+  const updateData = { ...req.body };
+  if (req.file) {
+    updateData.image = `/uploads/${req.file.filename}`; 
+  }
+  
+  const product = await ProductService.updateProduct(id, updateData);
   return successResponse(res, 'Produk berhasil diupdate', product);
 });
 

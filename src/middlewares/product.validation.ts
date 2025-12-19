@@ -1,10 +1,10 @@
-import { body, param} from 'express-validator';
+import { body, param } from 'express-validator';
 
 export const createProductValidation = [
   body('name')
     .trim()
     .notEmpty().withMessage('Nama produk wajib diisi')
-    .isLength({ min: 4 }).withMessage('Nama produk minimal 3 karakter'),
+    .isLength({ min: 4 }).withMessage('Nama produk minimal 4 karakter'),
   
   body('description')
     .trim()
@@ -19,10 +19,19 @@ export const createProductValidation = [
   body('stock')
     .notEmpty().withMessage('Stok wajib diisi')
     .isNumeric().withMessage('Stok harus angka')
-    .custom((value: number) => value >= 0).withMessage('Stok tidak boleh negatif')
+    .custom((value: number) => value >= 0).withMessage('Stok tidak boleh negatif'),
+  
+  body('categoryId')
+    .notEmpty().withMessage('Category ID wajib diisi')
+    .isUUID().withMessage('Category ID harus UUID yang valid'),
+  
+  body('storeId')
+    .notEmpty().withMessage('Store ID wajib diisi')
+    .isUUID().withMessage('Store ID harus UUID yang valid'),
+  
 ];
 
 export const getProductByIdValidation = [
   param('id')
-    .isNumeric().withMessage('ID harus angka')
+    .isUUID().withMessage('ID harus UUID yang valid') 
 ];
