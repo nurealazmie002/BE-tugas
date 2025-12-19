@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import * as StoreService from '../services/store.service';
 import { asyncHandler } from '../utils/async.handler';
 
-// 1. FIX: Ganti 'req' jadi '_req' kalau tidak dipakai, agar tidak kena warning linter
 export const getAllStores = asyncHandler(async (_req: Request, res: Response) => {
   const stores = await StoreService.getAllStores();
   res.json({ success: true, data: stores });
@@ -11,8 +10,6 @@ export const getAllStores = asyncHandler(async (_req: Request, res: Response) =>
 export const getStoreById = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // 2. FIX: Cek jika ID tidak ada (Type Guard)
-  // Ini membuat TypeScript yakin bahwa setelah baris ini, 'id' pasti string
   if (!id) {
     return res.status(400).json({ success: false, message: 'ID param is required' });
   }
@@ -27,7 +24,6 @@ export const getStoreById = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const createStore = asyncHandler(async (req: Request, res: Response) => {
-  // Pastikan route ini diproteksi middleware authenticate agar req.user ada
   const userId = (req as any).user?.id;
   
   if (!userId) {
@@ -46,7 +42,6 @@ export const createStore = asyncHandler(async (req: Request, res: Response) => {
 export const updateStore = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // 3. FIX: Type Guard lagi
   if (!id) {
     return res.status(400).json({ success: false, message: 'ID param is required' });
   }
@@ -58,7 +53,6 @@ export const updateStore = asyncHandler(async (req: Request, res: Response) => {
 export const deleteStore = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // 4. FIX: Type Guard lagi
   if (!id) {
     return res.status(400).json({ success: false, message: 'ID param is required' });
   }
