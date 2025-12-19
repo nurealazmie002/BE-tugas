@@ -2,10 +2,18 @@ import type { Request, Response } from 'express';
 import * as CategoryService from '../services/category.service';
 import { asyncHandler } from '../utils/async.handler';
 import { successResponse } from '../utils/response';
+import { parsePaginationParams } from '../utils/pagination';
 
-export const getAllCategories = asyncHandler(async (_req: Request, res: Response) => {
-    const categories = await CategoryService.getAllCategories();
-    return successResponse(res, 'Daftar kategori', categories);
+export const getAllCategories = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit } = parsePaginationParams(req.query);
+  const result = await CategoryService.getAllCategories(page, limit);
+  
+  return res.json({
+    success: true,
+    message: 'Daftar kategori',
+    data: result.data,
+    meta: result.meta,
+  });
 });
 
 export const getCategoryById = asyncHandler(async (req: Request, res: Response) => {

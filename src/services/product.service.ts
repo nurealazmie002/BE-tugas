@@ -1,5 +1,6 @@
 import prisma from '../prisma';
 import type { Product } from '../generated/client';
+import { calculateSkip, createPaginatedResponse, type PaginatedResponse } from '../utils/pagination';
 
 interface CreateProductInput {
   name: string;
@@ -8,24 +9,37 @@ interface CreateProductInput {
   description?: string;
   categoryId: string;
   storeId: string;
-  image?: string; 
+  image?: string;
 }
 
 type UpdateProductInput = Partial<CreateProductInput>;
 
-export const getAllProducts = async (): Promise<Product[]> => {
-  return await prisma.product.findMany({
-    where: {
-      deletedAt: null, 
-    },
-    include: {
-      category: true, 
-      store: true,    
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  });
+export const getAllProducts = async (page: number, limit: number): Promise<PaginatedResponse<Product>> => {
+  const skip = calculateSkip(page, limit);
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      skip,
+      take: limit,
+      where: {
+        deletedAt: null,
+      },
+      include: {
+        category: true,
+        store: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    }),
+    prisma.product.count({
+      where: {
+        deletedAt: null,
+      }
+    })
+  ]);
+
+  return createPaginatedResponse(products, page, limit, total);
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
@@ -56,7 +70,7 @@ export const createProduct = async (data: CreateProductInput): Promise<Product> 
       stock: data.stock,
       categoryId: data.categoryId,
       storeId: data.storeId,
-      image: data.image ?? null, 
+      image: data.image ?? null,
     },
   });
 };
@@ -84,7 +98,14 @@ export const deleteProduct = async (id: string): Promise<Product> => {
   });
 };
 
-export const searchProducts = async (name?: string, maxPrice?: number): Promise<Product[]> => {
+export const searchProducts = async (
+  name?: string, 
+  maxPrice?: number,
+  page: number = 1,
+  limit: number = 10
+): Promise<PaginatedResponse<Product>> => {
+  const skip = calculateSkip(page, limit);
+
   const whereClause: any = {
     deletedAt: null,
   };
@@ -92,23 +113,32 @@ export const searchProducts = async (name?: string, maxPrice?: number): Promise<
   if (name) {
     whereClause.name = {
       contains: name,
-      mode: 'insensitive', 
+      mode: 'insensitive',
     };
   }
 
   if (maxPrice) {
     whereClause.price = {
-      lte: maxPrice, 
+      lte: maxPrice,
     };
   }
 
-  return await prisma.product.findMany({
-    where: whereClause,
-    include: {
-      category: true,
-      store: true,
-    },
-  });
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      skip,
+      take: limit,
+      where: whereClause,
+      include: {
+        category: true,
+        store: true,
+      },
+    }),
+    prisma.product.count({
+      where: whereClause,
+    })
+  ]);
+
+  return createPaginatedResponse(products, page, limit, total);
 };
 
 export const restoreProduct = async (id: string): Promise<Product> => {
@@ -120,7 +150,7 @@ export const restoreProduct = async (id: string): Promise<Product> => {
   });
 
   if (!checkProduct) {
-    throw new Error('Product not found in trash bin (Id incorrect or product is active)');
+    throw new Error('Product not found in trash bin');
   }
 
   return await prisma.product.update({

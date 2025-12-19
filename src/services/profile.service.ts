@@ -1,5 +1,6 @@
 import prisma from '../prisma';
 import type { Profile } from '../generated/client';
+import { calculateSkip, createPaginatedResponse, type PaginatedResponse } from '../utils/pagination';
 
 interface CreateProfileInput {
   name: string;
@@ -129,20 +130,29 @@ export const deleteProfile = async (userId: string): Promise<Profile> => {
   });
 };
 
-export const getAllProfiles = async (): Promise<Profile[]> => {
-  return await prisma.profile.findMany({
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          role: true,
+export const getAllProfiles = async (page: number, limit: number): Promise<PaginatedResponse<Profile>> => {
+  const skip = calculateSkip(page, limit);
+
+  const [profiles, total] = await Promise.all([
+    prisma.profile.findMany({
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+          }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  });
+    }),
+    prisma.profile.count()
+  ]);
+
+  return createPaginatedResponse(profiles, page, limit, total);
 };

@@ -2,10 +2,17 @@ import type { Request, Response } from 'express';
 import * as ProfileService from '../services/profile.service';
 import { asyncHandler } from '../utils/async.handler';
 import { successResponse } from '../utils/response';
+import { parsePaginationParams } from '../utils/pagination';
 
-export const getAllProfiles = asyncHandler(async (_req: Request, res: Response) => {
-  const profiles = await ProfileService.getAllProfiles();
-  return successResponse(res, 'Daftar semua profile', profiles);
+export const getAllProfiles = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit } = parsePaginationParams(req.query);
+  const result = await ProfileService.getAllProfiles(page, limit);
+  return res.json({
+    success: true,
+    message: 'Daftar semua profile',
+    data: result.data,
+    meta: result.meta,
+  });
 });
 
 export const getProfileByUserId = asyncHandler(async (req: Request, res: Response) => {

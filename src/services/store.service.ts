@@ -1,4 +1,5 @@
 import prisma from '../prisma';
+import { calculateSkip, createPaginatedResponse} from '../utils/pagination';
 
 interface CreateStoreInput {
   name: string;
@@ -8,17 +9,26 @@ interface CreateStoreInput {
   description?: string;
 }
 
-export const getAllStores = async () => {
-  return await prisma.store.findMany({
-    include: {
-      user: {
-        select: {
-          username: true,
-          email: true
+export const getAllStores = async (page: number, limit: number) => {
+  const skip = calculateSkip(page, limit);
+
+  const [stores, total] = await Promise.all([
+    prisma.store.findMany({
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: { username: true, email: true }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
-    }
-  });
+    }),
+    prisma.store.count()
+  ]);
+
+  return createPaginatedResponse(stores, page, limit, total);
 };
 
 export const createStore = async (userId: string, data: CreateStoreInput) => {
@@ -57,24 +67,32 @@ export const deleteStore = async (id: string) => {
   });
 };
 
-export const searchStores = async (keyword: string) => {
-  return await prisma.store.findMany({
-    where: {
-      OR: [
-        { name: { contains: keyword, mode: 'insensitive' } },
-        { description: { contains: keyword, mode: 'insensitive' } },
-        { address: { contains: keyword, mode: 'insensitive' } },
-      ],
-    },
-    include: {
-      user: {
-        select: {
-          username: true,
-          email: true
+export const searchStores = async (keyword: string, page: number, limit: number) => {
+  const skip = calculateSkip(page, limit);
+
+  const whereClause = {
+    OR: [
+      { name: { contains: keyword, mode: 'insensitive' as const } },
+      { description: { contains: keyword, mode: 'insensitive' as const } },
+      { address: { contains: keyword, mode: 'insensitive' as const } },
+    ],
+  };
+
+  const [stores, total] = await Promise.all([
+    prisma.store.findMany({
+      skip,
+      take: limit,
+      where: whereClause,
+      include: {
+        user: {
+          select: { username: true, email: true }
         }
       }
-    }
-  });
+    }),
+    prisma.store.count({ where: whereClause })
+  ]);
+
+  return createPaginatedResponse(stores, page, limit, total);
 };
 
 export const getStoreProducts = async (storeId: string) => {

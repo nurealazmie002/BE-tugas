@@ -2,10 +2,38 @@ import type { Request, Response } from 'express';
 import * as ProductService from '../services/product.service';
 import { asyncHandler } from '../utils/async.handler';
 import { successResponse } from '../utils/response';
+import { parsePaginationParams } from '../utils/pagination';
 
-export const getAllProducts = asyncHandler(async (_req: Request, res: Response) => {
-  const products = await ProductService.getAllProducts();
-  return successResponse(res, 'Daftar produk', products);
+export const getAllProducts = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit } = parsePaginationParams(req.query);
+  
+  const result = await ProductService.getAllProducts(page, limit);
+  
+  return res.json({
+    success: true,
+    message: 'Daftar produk',
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+export const searchProducts = asyncHandler(async (req: Request, res: Response) => {
+  const { name, maxPrice } = req.query;
+  const { page: validPage, limit: validLimit } = parsePaginationParams(req.query);
+  
+  const result = await ProductService.searchProducts(
+    name as string,
+    maxPrice ? Number(maxPrice) : undefined,
+    validPage,
+    validLimit
+  );
+  
+  return res.json({
+    success: true,
+    message: 'Hasil pencarian',
+    data: result.data,
+    meta: result.meta,
+  });
 });
 
 export const getProductById = asyncHandler(async (req: Request, res: Response) => {
@@ -51,12 +79,3 @@ export const restoreProduct = asyncHandler(async (req: Request, res: Response) =
     return successResponse(res, 'Produk berhasil dipulihkan', product);
 });
 
-export const searchProducts = asyncHandler(async (req: Request, res: Response) => {
-  const { name, maxPrice } = req.query;
-  
-  const products = await ProductService.searchProducts(
-    name as string,
-    maxPrice ? Number(maxPrice) : undefined
-  );
-  return successResponse(res, 'Hasil pencarian', products);
-});
