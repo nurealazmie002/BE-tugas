@@ -50,7 +50,6 @@ export const getProfileById = async (id: string): Promise<Profile> => {
 };
 
 export const createProfile = async (data: CreateProfileInput): Promise<Profile> => {
-  // Cek apakah user sudah punya profile
   const existingProfile = await prisma.profile.findUnique({
     where: { userId: data.userId }
   });
@@ -59,7 +58,6 @@ export const createProfile = async (data: CreateProfileInput): Promise<Profile> 
     throw new Error('User sudah memiliki profile');
   }
 
-  // Cek apakah user exists
   const userExists = await prisma.user.findUnique({
     where: { id: data.userId }
   });
@@ -89,7 +87,6 @@ export const createProfile = async (data: CreateProfileInput): Promise<Profile> 
 };
 
 export const updateProfile = async (userId: string, data: UpdateProfileInput): Promise<Profile> => {
-  // Cek profile exists
   const profile = await prisma.profile.findUnique({
     where: { userId }
   });

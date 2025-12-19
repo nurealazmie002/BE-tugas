@@ -12,9 +12,8 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🚀 Mulai seeding...');
+  console.log('Mulai seeding...');
 
-  // 1. Seed Admin User
   const hashedPasswordAdmin = await bcrypt.hash('admin123', 10);
   
   const admin = await prisma.user.upsert({
@@ -30,7 +29,6 @@ async function main() {
 
   console.log('✅ Admin user created:', admin.username);
 
-  // 2. Seed Regular User (Customer)
   const hashedPasswordUser = await bcrypt.hash('password123', 10);
   
   const user = await prisma.user.upsert({
@@ -46,7 +44,6 @@ async function main() {
 
   console.log('✅ Regular user created:', user.username);
 
-  // 3. Seed Profile for Regular User
   const profile = await prisma.profile.upsert({
     where: { userId: user.id },
     update: {},
@@ -61,7 +58,6 @@ async function main() {
 
   console.log('✅ Profile created:', profile.name);
 
-  // 4. Seed Store
   const store = await prisma.store.upsert({
     where: { email: 'kontak@tokobudi.com' },
     update: {},
@@ -77,7 +73,6 @@ async function main() {
 
   console.log('✅ Store created:', store.name);
 
-  // 5. Seed Categories
   const categoryElektronik = await prisma.category.upsert({
     where: { name: 'Elektronik' },
     update: {},
@@ -98,7 +93,6 @@ async function main() {
 
   console.log('✅ Categories created: Elektronik, Fashion');
 
-  // 6. Seed Products
   const product1 = await prisma.product.create({
     data: {
       name: 'Mouse Wireless Logitech M185',

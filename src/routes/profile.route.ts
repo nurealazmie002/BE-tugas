@@ -18,12 +18,10 @@ import { upload } from '../middlewares/upload.middleware';
 
 const router = Router();
 
-// Public routes (bisa diakses tanpa auth, tapi butuh API key)
 router.get('/profiles', getAllProfiles);
 router.get('/profiles/user/:userId', validate(getUserIdParamValidation), getProfileByUserId);
 
-// Protected routes (butuh authentication)
-router.get('/profile/me', authenticate, getMyProfile); // Get profile user yang login
+router.get('/profile/me', authenticate, getMyProfile); 
 
 router.post('/profile',
   authenticate,

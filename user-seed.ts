@@ -1,32 +1,29 @@
 import prisma from './src/prisma';
-import bcrypt from 'bcrypt'; // 👈 Import bcrypt untuk hash password
+import bcrypt from 'bcrypt'; 
 
 async function main() {
-  console.log("🚀 Memulai Seeding...");
+  console.log(" Memulai Seeding...");
 
-  // 1. Hash password dulu
   const hashedPassword = await bcrypt.hash("password123", 10);
 
-  // 2. Seed User (PERBAIKI: tambah password dan hubungkan ke store)
   const user = await prisma.user.upsert({
     where: { email: "budi@test.com" },
     update: {},
     create: {
-      username: "buditester", // 👈 Username harus unique dan lowercase lebih baik
+      username: "buditester",
       email: "budi@test.com",
-      password: hashedPassword, // 👈 TAMBAHKAN INI (wajib!)
-      role: "customer", // 👈 Optional, default sudah "customer"
+      password: hashedPassword, 
+      role: "customer", 
     },
   });
 
   console.log("✅ User created:", user.username);
 
-  // 3. Seed Profile (TAMBAHAN - sekarang ada model Profile terpisah)
   const profile = await prisma.profile.upsert({
     where: { userId: user.id },
     update: {},
     create: {
-      name: "Budi Tester", // 👈 Nama lengkap sekarang di Profile
+      name: "Budi Tester", 
       gender: "male",
       address: "Jl. Sudirman No. 123, Jakarta",
       image: null,
@@ -36,7 +33,6 @@ async function main() {
 
   console.log("✅ Profile created:", profile.name);
 
-  // 4. Seed Store (PERBAIKI: hubungkan ke user)
   const store = await prisma.store.upsert({
     where: { email: "kontak@tokobudi.com" },
     update: {},
@@ -44,27 +40,25 @@ async function main() {
       name: "Toko Budi Sejahtera",
       email: "kontak@tokobudi.com",
       address: "Jl. Merdeka No. 1",
-      phone: "081234567890", // 👈 Optional tapi bagus ditambahkan
+      phone: "081234567890", 
       description: "Toko serba ada terlengkap",
-      userId: user.id, // 👈 PENTING: Relasi ke user!
+      userId: user.id, 
     },
   });
 
   console.log("✅ Store created:", store.name);
 
-  // 5. Seed Category
   const category = await prisma.category.upsert({
     where: { name: "Elektronik" },
     update: {},
     create: {
       name: "Elektronik",
-      description: "Peralatan elektronik dan gadget", // 👈 Optional
+      description: "Peralatan elektronik dan gadget", 
     },
   });
 
   console.log("✅ Category created:", category.name);
 
-  // 6. Seed Product
   const product = await prisma.product.create({
     data: {
       name: "Mouse Wireless Logitech",

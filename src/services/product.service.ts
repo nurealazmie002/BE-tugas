@@ -68,7 +68,6 @@ export const updateProduct = async (id: string, data: UpdateProductInput): Promi
     where: { id },
     data: {
       ...data,
-      // Jika image di-pass sebagai undefined, jangan update field image
       ...(data.image !== undefined && { image: data.image }),
     },
   });
