@@ -1,6 +1,6 @@
-import prisma from '../prisma';
 import type { Product } from '../generated/client';
 import { calculateSkip, createPaginatedResponse, type PaginatedResponse } from '../utils/pagination';
+import * as ProductRepository from '../repositories/product.repository';
 
 interface CreateProductInput {
   name: string;
@@ -18,41 +18,15 @@ export const getAllProducts = async (page: number, limit: number): Promise<Pagin
   const skip = calculateSkip(page, limit);
 
   const [products, total] = await Promise.all([
-    prisma.product.findMany({
-      skip,
-      take: limit,
-      where: {
-        deletedAt: null,
-      },
-      include: {
-        category: true,
-        store: true,
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    }),
-    prisma.product.count({
-      where: {
-        deletedAt: null,
-      }
-    })
+    ProductRepository.findAll(skip, limit),
+    ProductRepository.count()
   ]);
 
   return createPaginatedResponse(products, page, limit, total);
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
-  const product = await prisma.product.findFirst({
-    where: {
-      id,
-      deletedAt: null,
-    },
-    include: {
-      category: true,
-      store: true,
-    },
-  });
+  const product = await ProductRepository.findById(id);
 
   if (!product) {
     throw new Error('Product not found');
@@ -62,40 +36,30 @@ export const getProductById = async (id: string): Promise<Product> => {
 };
 
 export const createProduct = async (data: CreateProductInput): Promise<Product> => {
-  return await prisma.product.create({
-    data: {
-      name: data.name,
-      description: data.description ?? null,
-      price: data.price,
-      stock: data.stock,
-      categoryId: data.categoryId,
-      storeId: data.storeId,
-      image: data.image ?? null,
-    },
+  return ProductRepository.create({
+    name: data.name,
+    description: data.description ?? null,
+    price: data.price,
+    stock: data.stock,
+    categoryId: data.categoryId,
+    storeId: data.storeId,
+    image: data.image ?? null
   });
 };
 
 export const updateProduct = async (id: string, data: UpdateProductInput): Promise<Product> => {
   await getProductById(id);
 
-  return await prisma.product.update({
-    where: { id },
-    data: {
-      ...data,
-      ...(data.image !== undefined && { image: data.image }),
-    },
+  return ProductRepository.update(id, {
+    ...data,
+    ...(data.image !== undefined && { image: data.image })
   });
 };
 
 export const deleteProduct = async (id: string): Promise<Product> => {
   await getProductById(id);
 
-  return await prisma.product.update({
-    where: { id },
-    data: {
-      deletedAt: new Date(),
-    },
-  });
+  return ProductRepository.softDelete(id);
 };
 
 export const searchProducts = async (
@@ -107,56 +71,36 @@ export const searchProducts = async (
   const skip = calculateSkip(page, limit);
 
   const whereClause: any = {
-    deletedAt: null,
+    deletedAt: null
   };
 
   if (name) {
     whereClause.name = {
       contains: name,
-      mode: 'insensitive',
+      mode: 'insensitive'
     };
   }
 
   if (maxPrice) {
     whereClause.price = {
-      lte: maxPrice,
+      lte: maxPrice
     };
   }
 
   const [products, total] = await Promise.all([
-    prisma.product.findMany({
-      skip,
-      take: limit,
-      where: whereClause,
-      include: {
-        category: true,
-        store: true,
-      },
-    }),
-    prisma.product.count({
-      where: whereClause,
-    })
+    ProductRepository.search(whereClause, skip, limit),
+    ProductRepository.count(whereClause)
   ]);
 
   return createPaginatedResponse(products, page, limit, total);
 };
 
 export const restoreProduct = async (id: string): Promise<Product> => {
-  const checkProduct = await prisma.product.findFirst({
-    where: {
-      id,
-      NOT: { deletedAt: null },
-    },
-  });
+  const checkProduct = await ProductRepository.findDeletedById(id);
 
   if (!checkProduct) {
     throw new Error('Product not found in trash bin');
   }
 
-  return await prisma.product.update({
-    where: { id },
-    data: {
-      deletedAt: null,
-    },
-  });
+  return ProductRepository.restore(id);
 };

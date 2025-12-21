@@ -1,78 +1,51 @@
-import prisma from "../prisma"
-import type { Prisma, User } from "#generated/client"
+import type { Prisma, User } from '../generated/client';
+import * as UserRepository from '../repositories/user.repository';
 
 export const getAllUser = async (): Promise<User[]> => {
-  return prisma.user.findMany({
-    where: {
-      deletedAt: null
-    }
-  })
-}
+  return UserRepository.findAll();
+};
 
 export const getUserById = async (id: string): Promise<User> => {
-  const user = await prisma.user.findFirst({
-    where: {
-      id,
-      deletedAt: null
-    }
-  })
+  const user = await UserRepository.findById(id);
 
   if (!user) {
-    throw new Error("User not found")
+    throw new Error('User not found');
   }
 
-  return user
-}
+  return user;
+};
 
 export const createUser = async (data: {
-  name: string
-  email: string
-  password: string
-  role?: string
+  name: string;
+  email: string;
+  password: string;
+  role?: string;
 }): Promise<User> => {
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      email: data.email
-    }
-  })
+  const existingUser = await UserRepository.findByEmail(data.email);
 
   if (existingUser) {
-    throw new Error("User already exists")
+    throw new Error('User already exists');
   }
 
-  return prisma.user.create({
-    data: {
-      username: data.name,
-      email: data.email,
-      password: data.password,
-      role: data.role ?? "USER"
-    }
-  })
-}
+  return UserRepository.create({
+    username: data.name,
+    email: data.email,
+    password: data.password,
+    role: data.role ?? 'USER'
+  });
+};
 
 export const updateUser = async (
   id: string,
   data: Prisma.UserUpdateInput
 ): Promise<User> => {
-  await getUserById(id)
+  await getUserById(id);
 
-  return prisma.user.update({
-    where: {
-      id
-    },
-    data
-  })
-}
+  return UserRepository.update(id, data);
+};
 
 export const deleteUser = async (id: string): Promise<User> => {
-  await getUserById(id)
+  await getUserById(id);
 
-  return prisma.user.update({
-    where: {
-      id
-    },
-    data: {
-      deletedAt: new Date()
-    }
-  })
-}
+  return UserRepository.softDelete(id);
+};

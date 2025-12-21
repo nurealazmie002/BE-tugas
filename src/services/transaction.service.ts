@@ -1,4 +1,4 @@
-import prisma from "../prisma";
+import * as TransactionRepository from '../repositories/transaction.repository';
 
 interface CheckoutItem {
   productId: string;
@@ -17,14 +17,10 @@ export const checkout = async (userId: string, items: CheckoutItem[]) => {
   const transactionItemsData: TransactionItemData[] = [];
 
   for (const item of items) {
-    const product = await prisma.product.findUnique({
-      where: {
-        id: item.productId
-      }
-    });
+    const product = await TransactionRepository.findProductById(item.productId);
 
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error('Product not found');
     }
 
     if (product.stock < item.quantity) {
@@ -41,60 +37,9 @@ export const checkout = async (userId: string, items: CheckoutItem[]) => {
     });
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    const newTransaction = await tx.transaction.create({
-      data: {
-        userId,
-        total,
-        items: {
-          createMany: {
-            data: transactionItemsData
-          }
-        }}
-    });
-
-    for (const data of transactionItemsData) {
-      await tx.transactionItem.create({
-        data: {
-          transactionId: newTransaction.id,
-          productId: data.productId,
-          quantity: data.quantity,
-          price: data.price
-        }
-      });
-
-      await tx.product.update({
-        where: {
-          id: data.productId
-        },
-        data: {
-          stock: {
-            decrement: data.quantity
-          }
-        }
-      });
-    }
-
-    return newTransaction;
-  });
-
-  return result;
+  return TransactionRepository.createWithItems(userId, total, transactionItemsData);
 };
 
 export const getTransactionHistory = async (userId: string) => {
-  return await prisma.transaction.findMany({
-    where: {
-      userId
-    },
-    include: {
-      items: {
-        include: {
-          product: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
+  return TransactionRepository.findByUserId(userId);
 };

@@ -1,14 +1,14 @@
-import prisma from '../prisma';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import type { User } from '../generated/client';
+import * as UserRepository from '../repositories/user.repository';
 
 const JWT_SECRET = process.env.JWT_SECRET || '6gcIv7CSI9e3CgDj2J3Y';
 
 type UserWithoutPassword = Omit<User, 'password'>;
 
 export const register = async (data: { name: string; email: string; password: string, role?: string }): Promise<UserWithoutPassword> => {
-  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  const existingUser = await UserRepository.findByEmail(data.email);
   
   if (existingUser) {
     throw new Error('Email sudah terdaftar');
@@ -16,13 +16,11 @@ export const register = async (data: { name: string; email: string; password: st
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  const newUser = await prisma.user.create({
-    data: {
-      username: data.name,
-      email: data.email,
-      password: hashedPassword,
-      role: data.role || 'USER', 
-    },
+  const newUser = await UserRepository.create({
+    username: data.name,
+    email: data.email,
+    password: hashedPassword,
+    role: data.role || 'USER',
   });
 
   const { password, ...userWithoutPassword } = newUser;
@@ -31,7 +29,7 @@ export const register = async (data: { name: string; email: string; password: st
 };
 
 export const login = async (data: { email: string; password: string }) => {
-  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  const user = await UserRepository.findByEmail(data.email);
   
   if (!user) {
     throw new Error('Email atau Password salah');
