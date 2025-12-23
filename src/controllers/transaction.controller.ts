@@ -1,15 +1,26 @@
-import { asyncHandler } from "../utils/async.handler";
-import * as transactionService from '../services/transaction.service';
-import type { Request, Response } from "express";
-import { successResponse } from "../utils/response";
+import type { Request, Response, NextFunction } from 'express';
+import { TransactionService } from '../services/transaction.service';
+import { successResponse } from '../utils/response';
 
-export const checkout = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, items } = req.body;
-  const result = await transactionService.checkout(userId, items);
-  return successResponse(res, "Transaction created successfully", result, 201);
-});
+export class TransactionController {
+  constructor(private transactionService: TransactionService) {}
 
-export const getHistory = asyncHandler(async (req: Request, res: Response) => {
-  const history = await transactionService.getTransactionHistory(req.params.userId!);
-  return successResponse(res, "Transaction history fetched successfully", history, 200);
-});
+  checkout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId, items } = req.body;
+      const result = await this.transactionService.checkout(userId, items);
+      return successResponse(res, 'Transaction created successfully', result, 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  getHistory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const history = await this.transactionService.getTransactionHistory(req.params.userId!);
+      return successResponse(res, 'Transaction history fetched successfully', history, 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+}

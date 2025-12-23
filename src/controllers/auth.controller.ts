@@ -1,16 +1,27 @@
-import type { Request, Response } from 'express';
-import * as AuthService from '../services/auth.service';
-import { asyncHandler } from '../utils/async.handler';
-import { successResponse } from '../utils/response'; 
+import type { Request, Response, NextFunction } from 'express';
+import { AuthService } from '../services/auth.service';
+import { successResponse } from '../utils/response';
 
-export const register = asyncHandler(async (req: Request, res: Response) => {
-  const user = await AuthService.register(req.body);
+export class AuthController {
+  constructor(private authService: AuthService) {}
 
-  return successResponse(res, 'Register berhasil', user, 201);
-});
+  register = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = await this.authService.register(req.body);
 
-export const login = asyncHandler(async (req: Request, res: Response) => {
-  const result = await AuthService.login(req.body);
-  
-  return successResponse(res, 'Login berhasil', result);
-});
+      return successResponse(res, 'Register berhasil', user, 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.authService.login(req.body);
+      
+      return successResponse(res, 'Login berhasil', result);
+    } catch (error) {
+      next(error);
+    }
+  }
+}

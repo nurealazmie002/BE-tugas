@@ -1,47 +1,52 @@
 import type { Category } from '../generated/client';
 import { calculateSkip, createPaginatedResponse, type PaginatedResponse } from '../utils/pagination';
-import * as CategoryRepository from '../repositories/category.repository';
+import { CategoryRepository } from '../repositories/category.repository';
+import type { ICreateCategory, IUpdateCategory } from '../models';
 
-export const getAllCategories = async (page: number, limit: number): Promise<PaginatedResponse<Category>> => {
-  const skip = calculateSkip(page, limit);
+export class CategoryService {
+  constructor(private repository: CategoryRepository) {}
 
-  const [categories, total] = await Promise.all([
-    CategoryRepository.findAll(skip, limit),
-    CategoryRepository.count()
-  ]);
+  async getAllCategories(page: number, limit: number): Promise<PaginatedResponse<Category>> {
+    const skip = calculateSkip(page, limit);
 
-  return createPaginatedResponse(categories, page, limit, total);
-};
+    const [categories, total] = await Promise.all([
+      this.repository.findAll(skip, limit),
+      this.repository.count()
+    ]);
 
-export const getCategoryById = async (id: string): Promise<Category> => {
-  const category = await CategoryRepository.findByIdWithProducts(id);
-
-  if (!category) {
-    throw new Error('Category not found');
+    return createPaginatedResponse(categories, page, limit, total);
   }
 
-  return category;
-};
+  async getCategoryById(id: string): Promise<Category> {
+    const category = await this.repository.findByIdWithProducts(id);
 
-export const createCategory = async (data: { name: string; description?: string }): Promise<Category> => {
-  return CategoryRepository.create({
-    name: data.name,
-    description: data.description ?? null
-  });
-};
+    if (!category) {
+      throw new Error('Category not found');
+    }
 
-export const updateCategory = async (id: string, data: { name?: string; description?: string }): Promise<Category> => {
-  await getCategoryById(id);
+    return category;
+  }
 
-  return CategoryRepository.update(id, data);
-};
+  async createCategory(data: ICreateCategory): Promise<Category> {
+    return this.repository.create({
+      name: data.name,
+      description: data.description ?? null
+    });
+  }
 
-export const deleteCategory = async (id: string): Promise<Category> => {
-  await getCategoryById(id);
+  async updateCategory(id: string, data: IUpdateCategory): Promise<Category> {
+    await this.getCategoryById(id);
 
-  return CategoryRepository.remove(id);
-};
+    return this.repository.update(id, data);
+  }
 
-export const searchCategories = async (name?: string): Promise<Category[]> => {
-  return CategoryRepository.search(name);
-};
+  async deleteCategory(id: string): Promise<Category> {
+    await this.getCategoryById(id);
+
+    return this.repository.remove(id);
+  }
+
+  async searchCategories(name?: string): Promise<Category[]> {
+    return this.repository.search(name);
+  }
+}

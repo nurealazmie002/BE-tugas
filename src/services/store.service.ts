@@ -1,62 +1,59 @@
 import { calculateSkip, createPaginatedResponse } from '../utils/pagination';
-import * as StoreRepository from '../repositories/store.repository';
+import { StoreRepository } from '../repositories/store.repository';
+import type { ICreateStore, IUpdateStore } from '../models';
 
-interface CreateStoreInput {
-  name: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  description?: string;
+export class StoreService {
+  constructor(private repository: StoreRepository) {}
+
+  async getAllStores(page: number, limit: number) {
+    const skip = calculateSkip(page, limit);
+
+    const [stores, total] = await Promise.all([
+      this.repository.findAll(skip, limit),
+      this.repository.count()
+    ]);
+
+    return createPaginatedResponse(stores, page, limit, total);
+  }
+
+  async createStore(userId: string, data: Omit<ICreateStore, 'userId'>) {
+    return this.repository.create({
+      ...data,
+      userId
+    });
+  }
+
+  async getStoreById(id: string) {
+    const store = await this.repository.findByIdWithProducts(id);
+    
+    if (!store) throw new Error('Store tidak ditemukan');
+    return store;
+  }
+
+  async updateStore(id: string, data: IUpdateStore) {
+    await this.getStoreById(id);
+    return this.repository.update(id, data);
+  }
+
+  async deleteStore(id: string) {
+    await this.getStoreById(id);
+    return this.repository.remove(id);
+  }
+
+  async searchStores(keyword: string, page: number, limit: number) {
+    const skip = calculateSkip(page, limit);
+
+    const [stores, total] = await Promise.all([
+      this.repository.search(keyword, skip, limit),
+      this.repository.searchCount(keyword)
+    ]);
+
+    return createPaginatedResponse(stores, page, limit, total);
+  }
+
+  async getStoreProducts(storeId: string) {
+    const store = await this.repository.findByIdWithProducts(storeId);
+    if (!store) throw new Error('Store tidak ditemukan');
+    return store.products;
+  }
 }
-
-export const getAllStores = async (page: number, limit: number) => {
-  const skip = calculateSkip(page, limit);
-
-  const [stores, total] = await Promise.all([
-    StoreRepository.findAll(skip, limit),
-    StoreRepository.count()
-  ]);
-
-  return createPaginatedResponse(stores, page, limit, total);
-};
-
-export const createStore = async (userId: string, data: CreateStoreInput) => {
-  return StoreRepository.create({
-    ...data,
-    userId
-  });
-};
-
-export const getStoreById = async (id: string) => {
-  const store = await StoreRepository.findByIdWithProducts(id);
-  
-  if (!store) throw new Error('Store tidak ditemukan');
-  return store;
-};
-
-export const updateStore = async (id: string, data: Partial<CreateStoreInput>) => {
-  await getStoreById(id);
-  return StoreRepository.update(id, data);
-};
-
-export const deleteStore = async (id: string) => {
-  await getStoreById(id);
-  return StoreRepository.remove(id);
-};
-
-export const searchStores = async (keyword: string, page: number, limit: number) => {
-  const skip = calculateSkip(page, limit);
-
-  const [stores, total] = await Promise.all([
-    StoreRepository.search(keyword, skip, limit),
-    StoreRepository.searchCount(keyword)
-  ]);
-
-  return createPaginatedResponse(stores, page, limit, total);
-};
-
-export const getStoreProducts = async (storeId: string) => {
-  const store = await StoreRepository.findByIdWithProducts(storeId);
-  if (!store) throw new Error('Store tidak ditemukan');
-  return store.products;
-};

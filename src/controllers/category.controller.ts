@@ -1,49 +1,76 @@
-import type { Request, Response } from 'express';
-import * as CategoryService from '../services/category.service';
-import { asyncHandler } from '../utils/async.handler';
+import type { Request, Response, NextFunction } from 'express';
+import { CategoryService } from '../services/category.service';
 import { successResponse } from '../utils/response';
 import { parsePaginationParams } from '../utils/pagination';
 
-export const getAllCategories = asyncHandler(async (req: Request, res: Response) => {
-  const { page, limit } = parsePaginationParams(req.query);
-  const result = await CategoryService.getAllCategories(page, limit);
-  
-  return res.json({
-    success: true,
-    message: 'Daftar kategori',
-    data: result.data,
-    meta: result.meta,
-  });
-});
+export class CategoryController {
+  constructor(private categoryService: CategoryService) {}
 
-export const getCategoryById = asyncHandler(async (req: Request, res: Response) => {
-    const id = req.params.id!; 
-    
-    const category = await CategoryService.getCategoryById(id);
-    return successResponse(res, 'Kategori ditemukan', category);
-});
+  getAllCategories = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, limit } = parsePaginationParams(req.query);
+      const result = await this.categoryService.getAllCategories(page, limit);
+      
+      return res.json({
+        success: true,
+        message: 'Daftar kategori',
+        data: result.data,
+        meta: result.meta,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 
-export const createCategory = asyncHandler(async (req: Request, res: Response) => {
-    const category = await CategoryService.createCategory(req.body);
-    return successResponse(res, 'Kategori berhasil dibuat', category, 201);
-});
+  getCategoryById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id!; 
+      
+      const category = await this.categoryService.getCategoryById(id);
+      return successResponse(res, 'Kategori ditemukan', category);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-export const updateCategory = asyncHandler(async (req: Request, res: Response) => {
-    const id = req.params.id!;
-    
-    const category = await CategoryService.updateCategory(id, req.body);
-    return successResponse(res, 'Kategori berhasil diupdate', category);
-});
+  createCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const category = await this.categoryService.createCategory(req.body);
+      return successResponse(res, 'Kategori berhasil dibuat', category, 201);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-export const deleteCategory = asyncHandler(async (req: Request, res: Response) => {
-    const id = req.params.id!;
-    
-    const category = await CategoryService.deleteCategory(id);
-    return successResponse(res, 'Kategori berhasil dihapus', category);
-});
+  updateCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id!;
+      
+      const category = await this.categoryService.updateCategory(id, req.body);
+      return successResponse(res, 'Kategori berhasil diupdate', category);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-export const searchCategories = asyncHandler(async (req: Request, res: Response) => {
-    const { name } = req.query;
-    const categories = await CategoryService.searchCategories(name as string);
-    return successResponse(res, 'Hasil pencarian', categories);
-});
+  deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id!;
+      
+      const category = await this.categoryService.deleteCategory(id);
+      return successResponse(res, 'Kategori berhasil dihapus', category);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  searchCategories = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name } = req.query;
+      const categories = await this.categoryService.searchCategories(name as string);
+      return successResponse(res, 'Hasil pencarian', categories);
+    } catch (error) {
+      next(error);
+    }
+  }
+}

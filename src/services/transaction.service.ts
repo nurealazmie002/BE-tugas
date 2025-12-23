@@ -1,45 +1,39 @@
-import * as TransactionRepository from '../repositories/transaction.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
+import type { ICheckoutItem, ITransactionItemData } from '../models';
 
-interface CheckoutItem {
-  productId: string;
-  quantity: number;
-}
+export class TransactionService {
+  constructor(private repository: TransactionRepository) {}
 
-interface TransactionItemData {
-  productId: string;
-  quantity: number;
-  price: number;
-}
+  async checkout(userId: string, items: ICheckoutItem[]) {
+    let total = 0;
+    
+    const transactionItemsData: ITransactionItemData[] = [];
 
-export const checkout = async (userId: string, items: CheckoutItem[]) => {
-  let total = 0;
-  
-  const transactionItemsData: TransactionItemData[] = [];
+    for (const item of items) {
+      const product = await this.repository.findProductById(item.productId);
 
-  for (const item of items) {
-    const product = await TransactionRepository.findProductById(item.productId);
+      if (!product) {
+        throw new Error('Product not found');
+      }
 
-    if (!product) {
-      throw new Error('Product not found');
+      if (product.stock < item.quantity) {
+        throw new Error(`Not enough stock for product ${product.name || item.productId}`);
+      }
+
+      const price = Number(product.price);
+      total += price * item.quantity;
+
+      transactionItemsData.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: price
+      });
     }
 
-    if (product.stock < item.quantity) {
-      throw new Error(`Not enough stock for product ${product.name || item.productId}`);
-    }
-
-    const price = Number(product.price);
-    total += price * item.quantity;
-
-    transactionItemsData.push({
-      productId: item.productId,
-      quantity: item.quantity,
-      price: price
-    });
+    return this.repository.createWithItems(userId, total, transactionItemsData);
   }
 
-  return TransactionRepository.createWithItems(userId, total, transactionItemsData);
-};
-
-export const getTransactionHistory = async (userId: string) => {
-  return TransactionRepository.findByUserId(userId);
-};
+  async getTransactionHistory(userId: string) {
+    return this.repository.findByUserId(userId);
+  }
+}

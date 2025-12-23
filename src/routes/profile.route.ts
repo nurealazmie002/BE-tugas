@@ -1,12 +1,4 @@
 import { Router } from 'express';
-import {
-  getAllProfiles,
-  getProfileByUserId,
-  getMyProfile,
-  createProfile,
-  updateProfile,
-  deleteProfile,
-} from '../controllers/profile.controller';
 import { validate } from '../utils/validate';
 import {
   createProfileValidation,
@@ -16,27 +8,35 @@ import {
 import { authenticate } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
 
+import { ProfileRepository } from '../repositories/profile.repository';
+import { ProfileService } from '../services/profile.service';
+import { ProfileController } from '../controllers/profile.controller';
+
 const router = Router();
 
-router.get('/profiles', getAllProfiles);
-router.get('/profiles/user/:userId', validate(getUserIdParamValidation), getProfileByUserId);
+const profileRepository = new ProfileRepository();
+const profileService = new ProfileService(profileRepository);
+const profileController = new ProfileController(profileService);
 
-router.get('/profile/me', authenticate, getMyProfile); 
+router.get('/profiles', profileController.getAllProfiles);
+router.get('/profiles/user/:userId', validate(getUserIdParamValidation), profileController.getProfileByUserId);
+
+router.get('/profile/me', authenticate, profileController.getMyProfile); 
 
 router.post('/profile',
   authenticate,
   upload.single('image'),
   validate(createProfileValidation),
-  createProfile
+  profileController.createProfile
 );
 
 router.put('/profile',
   authenticate,
   upload.single('image'),
   validate(updateProfileValidation),
-  updateProfile
+  profileController.updateProfile
 );
 
-router.delete('/profile', authenticate, deleteProfile);
+router.delete('/profile', authenticate, profileController.deleteProfile);
 
 export default router;
