@@ -5,7 +5,7 @@ import { successResponse } from '../utils/response';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  getAllUser = async (req: Request, res: Response, next: NextFunction) => {
+  getAllUser = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const users = await this.userService.getAllUser();
       return successResponse(res, 'Users fetched successfully', users, 200);
