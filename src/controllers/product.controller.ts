@@ -1,10 +1,13 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ProductService } from '../services/product.service';
+import { ProductService, getProductDashboardService } from '../services/product.service';
 import { successResponse } from '../utils/response';
 import { parsePaginationParams } from '../utils/pagination';
 
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private dashboardService?: getProductDashboardService
+  ) {}
 
   getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -18,6 +21,91 @@ export class ProductController {
         data: result.data,
         meta: result.meta,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  getAllProductsAdvanced = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, limit } = parsePaginationParams(req.query);
+      const { search, sortBy, sortOrder, categoryId, minPrice, maxPrice } = req.query;
+      
+      const params: {
+        page: number;
+        limit: number;
+        search?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+        categoryId?: string;
+        minPrice?: number;
+        maxPrice?: number;
+      } = { page, limit };
+
+      if (search) params.search = search as string;
+      if (sortBy) params.sortBy = sortBy as string;
+      if (sortOrder) params.sortOrder = sortOrder as 'asc' | 'desc';
+      if (categoryId) params.categoryId = categoryId as string;
+      if (minPrice) params.minPrice = Number(minPrice);
+      if (maxPrice) params.maxPrice = Number(maxPrice);
+
+      const result = await this.productService.getAllProductsAdvanced(params);
+      
+      return res.json({
+        success: true,
+        message: 'Daftar produk (advanced)',
+        data: result.data,
+        meta: result.meta,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  getStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const categoryId = req.query.categoryId as string | undefined;
+      
+      const stats = await this.productService.getProductStats(categoryId);
+      
+      return successResponse(res, 'Statistik produk berhasil diambil', stats);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  getDashboard = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!this.dashboardService) {
+        return res.status(500).json({
+          success: false,
+          message: 'Dashboard service not initialized'
+        });
+      }
+
+      const dashboard = await this.dashboardService.execute();
+      
+      return successResponse(res, 'Dashboard statistik produk berhasil diambil', dashboard);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  findComplexProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const categoryName = req.query.categoryName as string;
+      const maxPrice = Number(req.query.maxPrice);
+
+      if (!categoryName || !maxPrice) {
+        return res.status(400).json({
+          success: false,
+          message: 'categoryName dan maxPrice harus diisi'
+        });
+      }
+      
+      const products = await this.productService.findComplexProducts(categoryName, maxPrice);
+      
+      return successResponse(res, 'Produk dengan filter kompleks', products);
     } catch (error) {
       next(error);
     }

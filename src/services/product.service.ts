@@ -1,7 +1,18 @@
-import type { Product } from '../generated/client';
+import type { Product, Prisma } from '../generated/client';
 import { calculateSkip, createPaginatedResponse, type PaginatedResponse } from '../utils/pagination';
 import { ProductRepository } from '../repositories/product.repository';
 import type { ICreateProduct, IUpdateProduct } from '../models';
+
+interface FindAllParams {
+  page: number;
+  limit: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
 
 export class ProductService {
   constructor(private repository: ProductRepository) {}
@@ -15,6 +26,68 @@ export class ProductService {
     ]);
 
     return createPaginatedResponse(products, page, limit, total);
+  }
+
+  async getAllProductsAdvanced(params: FindAllParams): Promise<PaginatedResponse<Product>> {
+    const { page, limit, search, sortBy, sortOrder, categoryId, minPrice, maxPrice } = params;
+    const skip = calculateSkip(page, limit);
+
+    const whereClause: Prisma.ProductWhereInput = {
+      deletedAt: null,
+    };
+
+    if (search) {
+      whereClause.name = { contains: search, mode: 'insensitive' };
+    }
+
+    if (categoryId) {
+      whereClause.categoryId = categoryId;
+    }
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      whereClause.price = {};
+      if (minPrice !== undefined) {
+        whereClause.price.gte = minPrice;
+      }
+      if (maxPrice !== undefined) {
+        whereClause.price.lte = maxPrice;
+      }
+    }
+
+    const sortCriteria: Prisma.ProductOrderByWithRelationInput = sortBy 
+      ? { [sortBy]: sortOrder || 'desc' } as Prisma.ProductOrderByWithRelationInput
+      : { createdAt: 'desc' };
+
+    const [products, totalItems] = await Promise.all([
+      this.repository.findAllAdvanced(skip, limit, whereClause, sortCriteria),
+      this.repository.countAll(whereClause)
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        page,
+        limit,
+        total: totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        hasNextPage: page < Math.ceil(totalItems / limit),
+        hasPrevPage: page > 1
+      }
+    };
+  }
+
+  async getProductStats(categoryId?: string) {
+    const stats = await this.repository.getStatistics(categoryId);
+    const categoryStats = await this.repository.getProductsByCategoryStats(categoryId);
+    
+    return {
+      overview: stats,
+      byCategory: categoryStats
+    };
+  }
+
+  async findComplexProducts(categoryName: string, maxPrice: number): Promise<Product[]> {
+    return this.repository.findComplex(categoryName, maxPrice);
   }
 
   async getProductById(id: string): Promise<Product> {
@@ -62,7 +135,7 @@ export class ProductService {
   ): Promise<PaginatedResponse<Product>> {
     const skip = calculateSkip(page, limit);
 
-    const whereClause: any = {
+    const whereClause: Prisma.ProductWhereInput = {
       deletedAt: null
     };
 
@@ -95,5 +168,24 @@ export class ProductService {
     }
 
     return this.repository.restore(id);
+  }
+}
+
+export class getProductDashboardService {
+  constructor(private productRepo: ProductRepository) {}
+
+  async execute() {
+    const [dashboardStats, lowStockProducts, averagePriceByCategory] = await Promise.all([
+      this.productRepo.getDashboardStats(),
+      this.productRepo.getLowStockProducts(10, 5),
+      this.productRepo.getAveragePriceByCategory()
+    ]);
+
+    return {
+      totalProducts: dashboardStats._count.id,
+      totalStock: dashboardStats._sum.stock ?? 0,
+      lowStockProducts: lowStockProducts,
+      averagePriceByCategory: averagePriceByCategory
+    };
   }
 }
