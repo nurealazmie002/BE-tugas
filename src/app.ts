@@ -16,8 +16,11 @@ import authRoutes from './routes/auth.route';
 import profileRoutes from './routes/profile.route';
 
 import { errorHandler } from './middlewares/error.handler';
+import { setupSwagger } from './swagger';
 
 const app = express();
+
+setupSwagger(app);
 
 app.use(helmet());
 app.use(cors());
