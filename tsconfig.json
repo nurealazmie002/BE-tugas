@@ -9,7 +9,7 @@
     "moduleResolution": "bundler",
     "target": "ES2022",
     "lib": ["esnext"],
-    "types": ["node"],
+    "types": ["node", "jest"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

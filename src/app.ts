@@ -48,7 +48,7 @@ app.use((req: any, res, next) => {
 app.get('/', (req: any, res) => {
   const waktu = Date.now() - (req.startTime || 0);
   res.json({ 
-      message: `Halo pemilik API Key: ${req.apiKey}! Hari 5 – MVC E-Commerce + Service`, 
+      message: `Halo pemilik API Key: ${req.apiKey}! selamat datang di API E-Commerce`, 
       waktu_proses: `${waktu}ms` 
   });
 });
